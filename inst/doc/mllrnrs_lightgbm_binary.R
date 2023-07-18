@@ -1,0 +1,676 @@
+## ---- include = FALSE---------------------------------------------------------
+# nolint start
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+
+## ----setup--------------------------------------------------------------------
+#  library(mlexperiments)
+#  library(mllrnrs)
+
+## -----------------------------------------------------------------------------
+#  library(mlbench)
+#  data("PimaIndiansDiabetes2")
+#  dataset <- PimaIndiansDiabetes2 |>
+#    data.table::as.data.table() |>
+#    na.omit()
+#  
+#  feature_cols <- colnames(dataset)[1:8]
+#  target_col <- "diabetes"
+
+## -----------------------------------------------------------------------------
+#  seed <- 123
+#  if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
+#    # on cran
+#    ncores <- 2L
+#  } else {
+#    ncores <- ifelse(
+#      test = parallel::detectCores() > 4,
+#      yes = 4L,
+#      no = ifelse(
+#        test = parallel::detectCores() < 2L,
+#        yes = 1L,
+#        no = parallel::detectCores()
+#      )
+#    )
+#  }
+#  options("mlexperiments.bayesian.max_init" = 10L)
+#  options("mlexperiments.optim.lgb.nrounds" = 100L)
+#  options("mlexperiments.optim.lgb.early_stopping_rounds" = 10L)
+
+## -----------------------------------------------------------------------------
+#  data_split <- splitTools::partition(
+#    y = dataset[, get(target_col)],
+#    p = c(train = 0.7, test = 0.3),
+#    type = "stratified",
+#    seed = seed
+#  )
+#  
+#  train_x <- model.matrix(
+#    ~ -1 + .,
+#    dataset[data_split$train, .SD, .SDcols = feature_cols]
+#  )
+#  train_y <- as.integer(dataset[data_split$train, get(target_col)]) - 1L
+#  
+#  
+#  test_x <- model.matrix(
+#    ~ -1 + .,
+#    dataset[data_split$test, .SD, .SDcols = feature_cols]
+#  )
+#  test_y <- as.integer(dataset[data_split$test, get(target_col)]) - 1L
+
+## -----------------------------------------------------------------------------
+#  fold_list <- splitTools::create_folds(
+#    y = train_y,
+#    k = 3,
+#    type = "stratified",
+#    seed = seed
+#  )
+
+## -----------------------------------------------------------------------------
+#  # required learner arguments, not optimized
+#  learner_args <- list(
+#    max_depth = -1L,
+#    verbose = -1L,
+#    objective = "binary",
+#    metric = "binary_logloss"
+#  )
+#  
+#  # set arguments for predict function and performance metric,
+#  # required for mlexperiments::MLCrossValidation and
+#  # mlexperiments::MLNestedCV
+#  predict_args <- NULL
+#  performance_metric <- metric("auc")
+#  performance_metric_args <- list(positive = "1")
+#  return_models <- FALSE
+#  
+#  # required for grid search and initialization of bayesian optimization
+#  parameter_grid <- expand.grid(
+#    bagging_fraction = seq(0.6, 1, .2),
+#    feature_fraction = seq(0.6, 1, .2),
+#    min_data_in_leaf = seq(2, 10, 2),
+#    learning_rate = seq(0.1, 0.2, 0.1),
+#    num_leaves = seq(2, 20, 4)
+#  )
+#  # reduce to a maximum of 10 rows
+#  if (nrow(parameter_grid) > 10) {
+#    set.seed(123)
+#    sample_rows <- sample(seq_len(nrow(parameter_grid)), 10, FALSE)
+#    parameter_grid <- kdry::mlh_subset(parameter_grid, sample_rows)
+#  }
+#  
+#  # required for bayesian optimization
+#  parameter_bounds <- list(
+#    bagging_fraction = c(0.2, 1),
+#    feature_fraction = c(0.2, 1),
+#    min_data_in_leaf = c(2L, 12L),
+#    learning_rate = c(0.1, 0.2),
+#    num_leaves =  c(2L, 20L)
+#  )
+#  optim_args <- list(
+#    iters.n = ncores,
+#    kappa = 3.5,
+#    acq = "ucb"
+#  )
+
+## -----------------------------------------------------------------------------
+#  tuner <- mlexperiments::MLTuneParameters$new(
+#    learner = mllrnrs::LearnerLightgbm$new(
+#      metric_optimization_higher_better = FALSE
+#    ),
+#    strategy = "grid",
+#    ncores = ncores,
+#    seed = seed
+#  )
+#  
+#  tuner$parameter_grid <- parameter_grid
+#  tuner$learner_args <- learner_args
+#  tuner$split_type <- "stratified"
+#  
+#  tuner$set_data(
+#    x = train_x,
+#    y = train_y
+#  )
+#  
+#  tuner_results_grid <- tuner$execute(k = 3)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #>
+#  #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  #>
+#  #> Parameter settings [===============================================================================================] 10/10 (100%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -> initscore=-0.709676
+#  #> [LightGBM] [Info] Start training from score -0.709676
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -> initscore=-0.676887
+#  #> [LightGBM] [Info] Start training from score -0.676887
+#  
+#  head(tuner_results_grid)
+#  #>    setting_id metric_optim_mean nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth
+#  #> 1:          1         0.4270896      15              0.6              0.6                4           0.2         18        -1
+#  #> 2:          2         0.3978536      14              0.8              1.0               10           0.2          6        -1
+#  #> 3:          3         0.4011304      95              0.8              0.8                4           0.1          2        -1
+#  #> 4:          4         0.4021737      30              1.0              0.8                4           0.1         10        -1
+#  #> 5:          5         0.4034704      14              1.0              0.6                6           0.2         18        -1
+#  #> 6:          6         0.3955430      28              1.0              1.0                8           0.1         14        -1
+#  #>    verbose objective         metric
+#  #> 1:      -1    binary binary_logloss
+#  #> 2:      -1    binary binary_logloss
+#  #> 3:      -1    binary binary_logloss
+#  #> 4:      -1    binary binary_logloss
+#  #> 5:      -1    binary binary_logloss
+#  #> 6:      -1    binary binary_logloss
+
+## -----------------------------------------------------------------------------
+#  tuner <- mlexperiments::MLTuneParameters$new(
+#    learner = mllrnrs::LearnerLightgbm$new(
+#      metric_optimization_higher_better = FALSE
+#    ),
+#    strategy = "bayesian",
+#    ncores = ncores,
+#    seed = seed
+#  )
+#  
+#  tuner$parameter_grid <- parameter_grid
+#  tuner$parameter_bounds <- parameter_bounds
+#  
+#  tuner$learner_args <- learner_args
+#  tuner$optim_args <- optim_args
+#  
+#  tuner$split_type <- "stratified"
+#  
+#  tuner$set_data(
+#    x = train_x,
+#    y = train_y
+#  )
+#  
+#  tuner_results_bayesian <- tuner$execute(k = 3)
+#  #>
+#  #> Registering parallel backend using 4 cores.
+#  
+#  head(tuner_results_bayesian)
+#  #>    Epoch setting_id bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves gpUtility acqOptimum inBounds
+#  #> 1:     0          1              0.6              0.6                4           0.2         18        NA      FALSE     TRUE
+#  #> 2:     0          2              0.8              1.0               10           0.2          6        NA      FALSE     TRUE
+#  #> 3:     0          3              0.8              0.8                4           0.1          2        NA      FALSE     TRUE
+#  #> 4:     0          4              1.0              0.8                4           0.1         10        NA      FALSE     TRUE
+#  #> 5:     0          5              1.0              0.6                6           0.2         18        NA      FALSE     TRUE
+#  #> 6:     0          6              1.0              1.0                8           0.1         14        NA      FALSE     TRUE
+#  #>    Elapsed      Score metric_optim_mean nrounds errorMessage max_depth verbose objective         metric
+#  #> 1:   0.972 -0.4270896         0.4270896      15           NA        -1      -1    binary binary_logloss
+#  #> 2:   0.951 -0.3978536         0.3978536      14           NA        -1      -1    binary binary_logloss
+#  #> 3:   0.974 -0.4011304         0.4011304      95           NA        -1      -1    binary binary_logloss
+#  #> 4:   0.971 -0.4021737         0.4021737      30           NA        -1      -1    binary binary_logloss
+#  #> 5:   0.039 -0.4034704         0.4034704      14           NA        -1      -1    binary binary_logloss
+#  #> 6:   0.045 -0.3955430         0.3955430      28           NA        -1      -1    binary binary_logloss
+
+## -----------------------------------------------------------------------------
+#  validator <- mlexperiments::MLCrossValidation$new(
+#    learner = mllrnrs::LearnerLightgbm$new(
+#      metric_optimization_higher_better = FALSE
+#    ),
+#    fold_list = fold_list,
+#    ncores = ncores,
+#    seed = seed
+#  )
+#  
+#  validator$learner_args <- tuner$results$best.setting[-1]
+#  
+#  validator$predict_args <- predict_args
+#  validator$performance_metric <- performance_metric
+#  validator$performance_metric_args <- performance_metric_args
+#  validator$return_models <- return_models
+#  
+#  validator$set_data(
+#    x = train_x,
+#    y = train_y
+#  )
+#  
+#  validator_results <- validator$execute()
+#  #>
+#  #> CV fold: Fold1
+#  #>
+#  #> CV fold: Fold2
+#  #>
+#  #> CV fold: Fold3
+#  
+#  head(validator_results)
+#  #>     fold performance bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves nrounds max_depth verbose
+#  #> 1: Fold1   0.8683236        0.4344866                1                2           0.1          5      38        -1      -1
+#  #> 2: Fold2   0.8841883        0.4344866                1                2           0.1          5      38        -1      -1
+#  #> 3: Fold3   0.8846806        0.4344866                1                2           0.1          5      38        -1      -1
+#  #>    objective         metric
+#  #> 1:    binary binary_logloss
+#  #> 2:    binary binary_logloss
+#  #> 3:    binary binary_logloss
+
+## -----------------------------------------------------------------------------
+#  validator <- mlexperiments::MLNestedCV$new(
+#    learner = mllrnrs::LearnerLightgbm$new(
+#      metric_optimization_higher_better = FALSE
+#    ),
+#    strategy = "grid",
+#    fold_list = fold_list,
+#    k_tuning = 3L,
+#    ncores = ncores,
+#    seed = seed
+#  )
+#  
+#  validator$parameter_grid <- parameter_grid
+#  validator$learner_args <- learner_args
+#  validator$split_type <- "stratified"
+#  
+#  validator$predict_args <- predict_args
+#  validator$performance_metric <- performance_metric
+#  validator$performance_metric_args <- performance_metric_args
+#  validator$return_models <- return_models
+#  
+#  validator$set_data(
+#    x = train_x,
+#    y = train_y
+#  )
+#  
+#  validator_results <- validator$execute()
+#  #>
+#  #> CV fold: Fold1
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #>
+#  #>
+#  #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #>
+#  #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #>
+#  #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #>
+#  #> Parameter settings [===============================================================================================] 10/10 (100%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #>
+#  #> CV fold: Fold2
+#  #> CV progress [====================================================================>-----------------------------------] 2/3 ( 67%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #>
+#  #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #>
+#  #> Parameter settings [===============================================================================================] 10/10 (100%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -> initscore=-0.717840
+#  #> [LightGBM] [Info] Start training from score -0.717840
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -> initscore=-0.705570
+#  #> [LightGBM] [Info] Start training from score -0.705570
+#  #>
+#  #> CV fold: Fold3
+#  #> CV progress [========================================================================================================] 3/3 (100%)
+#  #>
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #>
+#  #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #> [LightGBM] [Warning] No further splits with positive gain, best gain: -inf
+#  #>
+#  #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  #>
+#  #> Parameter settings [===============================================================================================] 10/10 (100%)
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -> initscore=-0.693147
+#  #> [LightGBM] [Info] Start training from score -0.693147
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -> initscore=-0.656780
+#  #> [LightGBM] [Info] Start training from score -0.656780
+#  #> [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -> initscore=-0.680877
+#  #> [LightGBM] [Info] Start training from score -0.680877
+#  
+#  head(validator_results)
+#  #>     fold performance nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose
+#  #> 1: Fold1   0.8572184      72              0.8              0.8                4           0.1          2        -1      -1
+#  #> 2: Fold2   0.8625066      22              0.8              0.6                8           0.1         14        -1      -1
+#  #> 3: Fold3   0.8725269      53              0.8              0.8                4           0.1          2        -1      -1
+#  #>    objective         metric
+#  #> 1:    binary binary_logloss
+#  #> 2:    binary binary_logloss
+#  #> 3:    binary binary_logloss
+
+## -----------------------------------------------------------------------------
+#  validator <- mlexperiments::MLNestedCV$new(
+#    learner = mllrnrs::LearnerLightgbm$new(
+#      metric_optimization_higher_better = FALSE
+#    ),
+#    strategy = "bayesian",
+#    fold_list = fold_list,
+#    k_tuning = 3L,
+#    ncores = ncores,
+#    seed = seed
+#  )
+#  
+#  validator$parameter_grid <- parameter_grid
+#  validator$learner_args <- learner_args
+#  validator$split_type <- "stratified"
+#  
+#  
+#  validator$parameter_bounds <- parameter_bounds
+#  validator$optim_args <- optim_args
+#  
+#  validator$predict_args <- predict_args
+#  validator$performance_metric <- performance_metric
+#  validator$performance_metric_args <- performance_metric_args
+#  validator$return_models <- TRUE
+#  
+#  validator$set_data(
+#    x = train_x,
+#    y = train_y
+#  )
+#  
+#  validator_results <- validator$execute()
+#  #>
+#  #> CV fold: Fold1
+#  #>
+#  #> Registering parallel backend using 4 cores.
+#  #>
+#  #> CV fold: Fold2
+#  #> CV progress [====================================================================>-----------------------------------] 2/3 ( 67%)
+#  #>
+#  #> Registering parallel backend using 4 cores.
+#  #>
+#  #> CV fold: Fold3
+#  #> CV progress [========================================================================================================] 3/3 (100%)
+#  #>
+#  #> Registering parallel backend using 4 cores.
+#  
+#  head(validator_results)
+#  #>     fold performance bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves nrounds max_depth verbose
+#  #> 1: Fold1   0.8572184              0.8        0.8000000                4           0.1          2      72        -1      -1
+#  #> 2: Fold2   0.8730830              1.0        0.6198464               10           0.1         20      23        -1      -1
+#  #> 3: Fold3   0.8725269              0.8        0.8000000                4           0.1          2      53        -1      -1
+#  #>    objective         metric
+#  #> 1:    binary binary_logloss
+#  #> 2:    binary binary_logloss
+#  #> 3:    binary binary_logloss
+
+## -----------------------------------------------------------------------------
+#  preds_lightgbm <- mlexperiments::predictions(
+#    object = validator,
+#    newdata = test_x
+#  )
+
+## -----------------------------------------------------------------------------
+#  perf_lightgbm <- mlexperiments::performance(
+#    object = validator,
+#    prediction_results = preds_lightgbm,
+#    y_ground_truth = test_y,
+#    type = "binary"
+#  )
+#  perf_lightgbm
+#  #>    model performance       auc     prauc sensitivity specificity       ppv       npv tn tp fn fp       tnr       tpr       fnr
+#  #> 1: Fold1   0.8075300 0.8075300 0.6470427   0.4871795   0.8607595 0.6333333 0.7727273 68 19 20 11 0.8607595 0.4871795 0.5128205
+#  #> 2: Fold2   0.7695553 0.7695553 0.5825168   0.3846154   0.8987342 0.6521739 0.7473684 71 15 24  8 0.8987342 0.3846154 0.6153846
+#  #> 3: Fold3   0.7914638 0.7914638 0.6164725   0.4615385   0.8734177 0.6428571 0.7666667 69 18 21 10 0.8734177 0.4615385 0.5384615
+#  #>          fpr    bbrier       acc        ce     fbeta
+#  #> 1: 0.1392405 0.1632361 0.7372881 0.2627119 0.5507246
+#  #> 2: 0.1012658 0.1851544 0.7288136 0.2711864 0.4838710
+#  #> 3: 0.1265823 0.1741526 0.7372881 0.2627119 0.5373134
+
+## ----include=FALSE------------------------------------------------------------
+#  # nolint end
+
