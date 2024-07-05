@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "ranger: Regression"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{ranger: Regression}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_ranger.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_ranger.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("BostonHousing")
 dataset <- BostonHousing |>
@@ -13,9 +34,12 @@ dataset <- BostonHousing |>
 
 feature_cols <- colnames(dataset)[1:13]
 target_col <- "medv"
+cat_vars <- "chas"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -32,11 +56,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   )
 }
 options("mlexperiments.bayesian.max_init" = 10L)
-options("mlexperiments.optim.xgb.nrounds" = 100L)
-options("mlexperiments.optim.xgb.early_stopping_rounds" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -44,35 +68,36 @@ data_split <- splitTools::partition(
   seed = seed
 )
 
-train_x <- model.matrix(
-  ~ -1 + .,
+train_x <- data.matrix(
   dataset[data_split$train, .SD, .SDcols = feature_cols]
 )
 train_y <- log(dataset[data_split$train, get(target_col)])
 
 
-test_x <- model.matrix(
-  ~ -1 + .,
+test_x <- data.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- log(dataset[data_split$test, get(target_col)])
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
-learner_args <- list(
-  objective = "reg:squarederror",
-  eval_metric = "rmse"
-)
+learner_args <- NULL
 
 # set arguments for predict function and performance metric,
 # required for mlexperiments::MLCrossValidation and
@@ -84,11 +109,11 @@ return_models <- FALSE
 
 # required for grid search and initialization of bayesian optimization
 parameter_grid <- expand.grid(
-  subsample = seq(0.6, 1, .2),
-  colsample_bytree = seq(0.6, 1, .2),
-  min_child_weight = seq(1, 5, 4),
-  learning_rate = seq(0.1, 0.2, 0.1),
-  max_depth = seq(1, 5, 4)
+  num.trees = seq(500, 1000, 500),
+  mtry = seq(2, 6, 2),
+  min.node.size = seq(1, 9, 4),
+  max.depth = seq(1, 9, 4),
+  sample.fraction = seq(0.5, 0.8, 0.3)
 )
 # reduce to a maximum of 10 rows
 if (nrow(parameter_grid) > 10) {
@@ -99,24 +124,27 @@ if (nrow(parameter_grid) > 10) {
 
 # required for bayesian optimization
 parameter_bounds <- list(
-  subsample = c(0.2, 1),
-  colsample_bytree = c(0.2, 1),
-  min_child_weight = c(1L, 10L),
-  learning_rate = c(0.1, 0.2),
-  max_depth =  c(1L, 10L)
+  num.trees = c(100L, 1000L),
+  mtry = c(2L, 9L),
+  min.node.size = c(1L, 20L),
+  max.depth = c(1L, 40L),
+  sample.fraction = c(0.3, 1.)
 )
 optim_args <- list(
   iters.n = ncores,
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
-  learner = mllrnrs::LearnerXgboost$new(
-    metric_optimization_higher_better = FALSE
-  ),
+  learner = mllrnrs::LearnerRanger$new(),
   strategy = "grid",
   ncores = ncores,
   seed = seed
@@ -128,41 +156,55 @@ tuner$split_type <- "stratified"
 
 tuner$set_data(
   x = train_x,
-  y = train_y
+  y = train_y,
+  cat_vars = cat_vars
 )
 
 tuner_results_grid <- tuner$execute(k = 3)
 #> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
+#>  Regression: using 'mean squared error' as optimization metric.
 
 head(tuner_results_grid)
-#>    setting_id metric_optim_mean nrounds subsample colsample_bytree min_child_weight learning_rate max_depth        objective
-#> 1:          1         0.1865926      77       0.6              0.8                5           0.2         1 reg:squarederror
-#> 2:          2         0.1612372      98       1.0              0.8                5           0.1         5 reg:squarederror
-#> 3:          3         0.1933602      93       0.8              0.8                5           0.1         1 reg:squarederror
-#> 4:          4         0.1615993      78       0.6              0.8                5           0.2         5 reg:squarederror
-#> 5:          5         0.1648096      99       1.0              0.8                1           0.1         5 reg:squarederror
-#> 6:          6         0.1573879     100       0.8              0.8                5           0.1         5 reg:squarederror
-#>    eval_metric
-#> 1:        rmse
-#> 2:        rmse
-#> 3:        rmse
-#> 4:        rmse
-#> 5:        rmse
-#> 6:        rmse
+#>    setting_id metric_optim_mean num.trees mtry min.node.size max.depth sample.fraction
+#> 1:          1        0.04406585       500    2             9         5             0.5
+#> 2:          2        0.03987001       500    2             5         5             0.8
+#> 3:          3        0.03405954       500    4             9         9             0.5
+#> 4:          4        0.09531892      1000    2             9         1             0.5
+#> 5:          5        0.09497929       500    2             9         1             0.8
+#> 6:          6        0.03046036      1000    6             1         9             0.5
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
-  learner = mllrnrs::LearnerXgboost$new(
-    metric_optimization_higher_better = FALSE
-  ),
+  learner = mllrnrs::LearnerRanger$new(),
   strategy = "bayesian",
   ncores = ncores,
   seed = seed
@@ -178,7 +220,8 @@ tuner$split_type <- "stratified"
 
 tuner$set_data(
   x = train_x,
-  y = train_y
+  y = train_y,
+  cat_vars = cat_vars
 )
 
 tuner_results_bayesian <- tuner$execute(k = 3)
@@ -186,27 +229,27 @@ tuner_results_bayesian <- tuner$execute(k = 3)
 #> Registering parallel backend using 4 cores.
 
 head(tuner_results_bayesian)
-#>    Epoch setting_id subsample colsample_bytree min_child_weight learning_rate max_depth gpUtility acqOptimum inBounds Elapsed
-#> 1:     0          1       0.6              0.8                5           0.2         1        NA      FALSE     TRUE   1.569
-#> 2:     0          2       1.0              0.8                5           0.1         5        NA      FALSE     TRUE   1.663
-#> 3:     0          3       0.8              0.8                5           0.1         1        NA      FALSE     TRUE   1.611
-#> 4:     0          4       0.6              0.8                5           0.2         5        NA      FALSE     TRUE   1.611
-#> 5:     0          5       1.0              0.8                1           0.1         5        NA      FALSE     TRUE   0.941
-#> 6:     0          6       0.8              0.8                5           0.1         5        NA      FALSE     TRUE   0.906
-#>         Score metric_optim_mean nrounds errorMessage        objective eval_metric
-#> 1: -0.1865024         0.1865024      56           NA reg:squarederror        rmse
-#> 2: -0.1607242         0.1607242      89           NA reg:squarederror        rmse
-#> 3: -0.1913163         0.1913163     100           NA reg:squarederror        rmse
-#> 4: -0.1609879         0.1609879      66           NA reg:squarederror        rmse
-#> 5: -0.1573682         0.1573682     100           NA reg:squarederror        rmse
-#> 6: -0.1635603         0.1635603      92           NA reg:squarederror        rmse
+#>    Epoch setting_id num.trees mtry min.node.size max.depth sample.fraction gpUtility acqOptimum inBounds Elapsed       Score
+#> 1:     0          1       500    2             9         5             0.5        NA      FALSE     TRUE   1.013 -0.04356188
+#> 2:     0          2       500    2             5         5             0.8        NA      FALSE     TRUE   1.035 -0.03848441
+#> 3:     0          3       500    4             9         9             0.5        NA      FALSE     TRUE   1.064 -0.03375279
+#> 4:     0          4      1000    2             9         1             0.5        NA      FALSE     TRUE   0.994 -0.09582667
+#> 5:     0          5       500    2             9         1             0.8        NA      FALSE     TRUE   0.070 -0.09470805
+#> 6:     0          6      1000    6             1         9             0.5        NA      FALSE     TRUE   0.690 -0.03014795
+#>    metric_optim_mean errorMessage
+#> 1:        0.04356188           NA
+#> 2:        0.03848441           NA
+#> 3:        0.03375279           NA
+#> 4:        0.09582667           NA
+#> 5:        0.09470805           NA
+#> 6:        0.03014795           NA
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
-  learner = mllrnrs::LearnerXgboost$new(
-    metric_optimization_higher_better = FALSE
-  ),
+  learner = mllrnrs::LearnerRanger$new(),
   fold_list = fold_list,
   ncores = ncores,
   seed = seed
@@ -221,7 +264,8 @@ validator$return_models <- return_models
 
 validator$set_data(
   x = train_x,
-  y = train_y
+  y = train_y,
+  cat_vars = cat_vars
 )
 
 validator_results <- validator$execute()
@@ -233,17 +277,20 @@ validator_results <- validator$execute()
 #> CV fold: Fold3
 
 head(validator_results)
-#>     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds        objective eval_metric
-#> 1: Fold1  0.04193925       0.6                1                1           0.1         5      92 reg:squarederror        rmse
-#> 2: Fold2  0.05079392       0.6                1                1           0.1         5      92 reg:squarederror        rmse
-#> 3: Fold3  0.03915493       0.6                1                1           0.1         5      92 reg:squarederror        rmse
+#>     fold performance num.trees mtry min.node.size max.depth sample.fraction
+#> 1: Fold1  0.04028795       100    9             1         9               1
+#> 2: Fold2  0.05592193       100    9             1         9               1
+#> 3: Fold3  0.04012856       100    9             1         9               1
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
-  learner = mllrnrs::LearnerXgboost$new(
-    metric_optimization_higher_better = FALSE
-  ),
+  learner = mllrnrs::LearnerRanger$new(),
   strategy = "grid",
   fold_list = fold_list,
   k_tuning = 3L,
@@ -262,58 +309,117 @@ validator$return_models <- return_models
 
 validator$set_data(
   x = train_x,
-  y = train_y
+  y = train_y,
+  cat_vars = cat_vars
 )
 
 validator_results <- validator$execute()
 #> 
 #> CV fold: Fold1
 #> 
-#> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> CV fold: Fold2
 #> CV progress [====================================================================>-----------------------------------] 2/3 ( 67%)
 #> 
-#> Parameter settings [============================>-------------------------------------------------------------------] 3/10 ( 30%)
-#> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> CV fold: Fold3
 #> CV progress [========================================================================================================] 3/3 (100%)
 #>                                                                                                                                   
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
+#> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
+#>  Regression: using 'mean squared error' as optimization metric.
+#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
+#>  Regression: using 'mean squared error' as optimization metric.
 
 head(validator_results)
-#>     fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth        objective eval_metric
-#> 1: Fold1  0.04291802      64       0.8              0.8                5           0.1         5 reg:squarederror        rmse
-#> 2: Fold2  0.05138479      76       0.6              1.0                1           0.1         5 reg:squarederror        rmse
-#> 3: Fold3  0.03818053      36       0.6              0.8                5           0.2         5 reg:squarederror        rmse
+#>     fold performance num.trees mtry min.node.size max.depth sample.fraction
+#> 1: Fold1   0.0444887      1000    6             1         9             0.5
+#> 2: Fold2   0.0481817       500    4             9         9             0.8
+#> 3: Fold3   0.0442502      1000    6             1         9             0.5
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
-  learner = mllrnrs::LearnerXgboost$new(
-    metric_optimization_higher_better = FALSE
-  ),
+  learner = mllrnrs::LearnerRanger$new(),
   strategy = "bayesian",
   fold_list = fold_list,
   k_tuning = 3L,
   ncores = ncores,
-  seed = seed
+  seed = 312
 )
 
 validator$parameter_grid <- parameter_grid
@@ -331,7 +437,8 @@ validator$return_models <- TRUE
 
 validator$set_data(
   x = train_x,
-  y = train_y
+  y = train_y,
+  cat_vars = cat_vars
 )
 
 validator_results <- validator$execute()
@@ -351,33 +458,40 @@ validator_results <- validator$execute()
 #> Registering parallel backend using 4 cores.
 
 head(validator_results)
-#>     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds        objective eval_metric
-#> 1: Fold1  0.04147964 0.6225939        0.9208933                5     0.1326066         5      59 reg:squarederror        rmse
-#> 2: Fold2  0.05881907 1.0000000        0.8000000                1     0.1000000         5      94 reg:squarederror        rmse
-#> 3: Fold3  0.03890190 0.6000000        1.0000000                5     0.2000000         5      37 reg:squarederror        rmse
+#>     fold performance num.trees mtry min.node.size max.depth sample.fraction
+#> 1: Fold1  0.04142935       640    7             1         9       0.7460504
+#> 2: Fold2  0.05358418       100    9             1         9       1.0000000
+#> 3: Fold3  0.04264248       367    4             5         9       0.8388297
+```
 
 
-## -----------------------------------------------------------------------------
-preds_xgboost <- mlexperiments::predictions(
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
+preds_ranger <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
-perf_xgboost <- mlexperiments::performance(
+```{r}
+perf_ranger <- mlexperiments::performance(
   object = validator,
-  prediction_results = preds_xgboost,
+  prediction_results = preds_ranger,
   y_ground_truth = test_y,
   type = "regression"
 )
-perf_xgboost
+perf_ranger
 #>    model performance        mse        msle       mae       mape      rmse      rmsle       rsq      sse
-#> 1: Fold1  0.04322328 0.02725729 0.001868252 0.1188479 0.04074989 0.1650978 0.04322328 0.8227146 4.224880
-#> 2: Fold2  0.04730978 0.03081692 0.002238216 0.1235033 0.04247960 0.1755475 0.04730978 0.7995622 4.776623
-#> 3: Fold3  0.03977942 0.02204549 0.001582402 0.1090010 0.03781531 0.1484773 0.03977942 0.8566129 3.417052
+#> 1: Fold1  0.04145400 0.02627203 0.001718434 0.1125978 0.03799847 0.1620865 0.04145400 0.8291229 4.072165
+#> 2: Fold2  0.04849306 0.03319570 0.002351577 0.1270962 0.04379366 0.1821969 0.04849306 0.7840903 5.145334
+#> 3: Fold3  0.03827309 0.02222906 0.001464829 0.1067541 0.03631993 0.1490941 0.03827309 0.8554189 3.445504
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```

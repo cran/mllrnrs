@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "lightgbm: Multiclass Classification"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{lightgbm: Multiclass Classification}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_lightgbm.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_lightgbm.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("DNA")
 dataset <- DNA |>
@@ -13,9 +34,11 @@ dataset <- DNA |>
 
 feature_cols <- colnames(dataset)[1:180]
 target_col <- "Class"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -34,9 +57,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
 options("mlexperiments.bayesian.max_init" = 10L)
 options("mlexperiments.optim.lgb.nrounds" = 100L)
 options("mlexperiments.optim.lgb.early_stopping_rounds" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -56,18 +81,24 @@ test_x <- model.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- as.integer(dataset[data_split$test, get(target_col)]) - 1L
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
 learner_args <- list(
   max_depth = -1L,
@@ -113,9 +144,14 @@ optim_args <- list(
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -259,9 +295,12 @@ head(tuner_results_grid)
 #> 4:      -1 multiclass multi_logloss         3
 #> 5:      -1 multiclass multi_logloss         3
 #> 6:      -1 multiclass multi_logloss         3
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -303,9 +342,11 @@ head(tuner_results_bayesian)
 #> 4:   1.460 -0.1298904         0.1298904      71           NA        -1      -1 multiclass multi_logloss         3
 #> 5:   0.360 -0.1357692         0.1357692      32           NA        -1      -1 multiclass multi_logloss         3
 #> 6:   0.561 -0.1313455         0.1313455      64           NA        -1      -1 multiclass multi_logloss         3
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -347,9 +388,14 @@ head(validator_results)
 #> 1: multiclass multi_logloss         3
 #> 2: multiclass multi_logloss         3
 #> 3: multiclass multi_logloss         3
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -713,9 +759,12 @@ head(validator_results)
 #>     objective        metric num_class
 #> 1: multiclass multi_logloss         3
 #> 2: multiclass multi_logloss         3
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -770,16 +819,23 @@ head(validator_results)
 #> 1: multiclass multi_logloss         3
 #> 2: multiclass multi_logloss         3
 #> 3: multiclass multi_logloss         3
+```
 
 
-## -----------------------------------------------------------------------------
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
 preds_lightgbm <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
+```{r}
 perf_lightgbm <- mlexperiments::performance(
   object = validator,
   prediction_results = preds_lightgbm,
@@ -790,16 +846,20 @@ perf_lightgbm
 #> 1: Fold1   0.9596127
 #> 2: Fold2   0.9612778
 #> 3: Fold3   0.9583793
+```
 
+## Appendix I: Grid-Search with Target Weigths
 
-## -----------------------------------------------------------------------------
+Here, `lightgbm`'s [`weight`-argument](https://lightgbm.readthedocs.io/en/latest/R/reference/lgb.Dataset.html) is used to rescale the case-weights during the training.
+
+```{r}
 # define the target weights
 y_weights <- ifelse(train_y == 1, 0.8, ifelse(train_y == 2, 1.2, 1))
 head(y_weights)
 #> [1] 1.2 1.2 0.0 0.8 0.8 0.0
+```
 
-
-## -----------------------------------------------------------------------------
+```{r}
 tuner_w_weights <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -849,9 +909,12 @@ head(tuner_results_grid)
 #> 4:      -1 multiclass multi_logloss         3
 #> 5:      -1 multiclass multi_logloss         3
 #> 6:      -1 multiclass multi_logloss         3
+```
 
 
-## -----------------------------------------------------------------------------
+## Appendix II: k-Fold Cross Validation with Target Weigths
+
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -898,8 +961,8 @@ head(validator_results)
 #> 1: multiclass multi_logloss         3
 #> 2: multiclass multi_logloss         3
 #> 3: multiclass multi_logloss         3
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```

@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "lightgbm: Binary Classification"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{lightgbm: Binary Classification}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_lightgbm.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_lightgbm.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("PimaIndiansDiabetes2")
 dataset <- PimaIndiansDiabetes2 |>
@@ -13,9 +34,11 @@ dataset <- PimaIndiansDiabetes2 |>
 
 feature_cols <- colnames(dataset)[1:8]
 target_col <- "diabetes"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -34,9 +57,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
 options("mlexperiments.bayesian.max_init" = 10L)
 options("mlexperiments.optim.lgb.nrounds" = 100L)
 options("mlexperiments.optim.lgb.early_stopping_rounds" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -56,18 +81,24 @@ test_x <- model.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- as.integer(dataset[data_split$test, get(target_col)]) - 1L
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
 learner_args <- list(
   max_depth = -1L,
@@ -112,9 +143,14 @@ optim_args <- list(
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -227,9 +263,12 @@ head(tuner_results_grid)
 #> 4:      -1    binary binary_logloss
 #> 5:      -1    binary binary_logloss
 #> 6:      -1    binary binary_logloss
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -271,9 +310,11 @@ head(tuner_results_bayesian)
 #> 4:   0.971 -0.4021737         0.4021737      30           NA        -1      -1    binary binary_logloss
 #> 5:   0.039 -0.4034704         0.4034704      14           NA        -1      -1    binary binary_logloss
 #> 6:   0.045 -0.3955430         0.3955430      28           NA        -1      -1    binary binary_logloss
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -312,9 +353,14 @@ head(validator_results)
 #> 1:    binary binary_logloss
 #> 2:    binary binary_logloss
 #> 3:    binary binary_logloss
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -593,9 +639,12 @@ head(validator_results)
 #> 1:    binary binary_logloss
 #> 2:    binary binary_logloss
 #> 3:    binary binary_logloss
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerLightgbm$new(
     metric_optimization_higher_better = FALSE
@@ -650,16 +699,23 @@ head(validator_results)
 #> 1:    binary binary_logloss
 #> 2:    binary binary_logloss
 #> 3:    binary binary_logloss
+```
 
 
-## -----------------------------------------------------------------------------
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
 preds_lightgbm <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
+```{r}
 perf_lightgbm <- mlexperiments::performance(
   object = validator,
   prediction_results = preds_lightgbm,
@@ -675,8 +731,8 @@ perf_lightgbm
 #> 1: 0.1392405 0.1632361 0.7372881 0.2627119 0.5507246
 #> 2: 0.1012658 0.1851544 0.7288136 0.2711864 0.4838710
 #> 3: 0.1265823 0.1741526 0.7372881 0.2627119 0.5373134
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```

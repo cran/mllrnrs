@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "glmnet: Multiclass Classification"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{glmnet: Multiclass Classification}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_glmnet.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_glmnet.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("DNA")
 dataset <- DNA |>
@@ -13,9 +34,11 @@ dataset <- DNA |>
 
 feature_cols <- colnames(dataset)[160:180]
 target_col <- "Class"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -32,9 +55,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   )
 }
 options("mlexperiments.bayesian.max_init" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -54,36 +79,42 @@ test_x <- model.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- dataset[data_split$test, get(target_col)]
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
-learner_args <- list(probability = TRUE, classification = TRUE)
+learner_args <- list(
+  family = "multinomial",
+  type.measure = "class",
+  standardize = TRUE
+)
 
 # set arguments for predict function and performance metric,
 # required for mlexperiments::MLCrossValidation and
 # mlexperiments::MLNestedCV
-predict_args <- list(reshape = TRUE)
+predict_args <- list(type = "response", reshape = TRUE)
 performance_metric <- metric("bacc")
 performance_metric_args <- NULL
 return_models <- FALSE
 
 # required for grid search and initialization of bayesian optimization
 parameter_grid <- expand.grid(
-  num.trees = seq(500, 1000, 500),
-  mtry = seq(2, 6, 2),
-  min.node.size = seq(1, 9, 4),
-  max.depth = seq(1, 9, 4),
-  sample.fraction = seq(0.5, 0.8, 0.3)
+  alpha = seq(0, 1, 0.05)
 )
 # reduce to a maximum of 10 rows
 if (nrow(parameter_grid) > 10) {
@@ -94,22 +125,25 @@ if (nrow(parameter_grid) > 10) {
 
 # required for bayesian optimization
 parameter_bounds <- list(
-  num.trees = c(100L, 1000L),
-  mtry = c(2L, 9L),
-  min.node.size = c(1L, 20L),
-  max.depth = c(1L, 40L),
-  sample.fraction = c(0.3, 1.)
+  alpha = c(0., 1.)
 )
 optim_args <- list(
   iters.n = ncores,
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   strategy = "grid",
   ncores = ncores,
   seed = seed
@@ -126,48 +160,34 @@ tuner$set_data(
 
 tuner_results_grid <- tuner$execute(k = 3)
 #> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [==================>-----------------------------------------------------------------------------] 2/10 ( 20%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [============================>-------------------------------------------------------------------] 3/10 ( 30%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
-#>  Classification: using 'classification error rate' as optimization metric.
 
 head(tuner_results_grid)
-#>    setting_id metric_optim_mean num.trees mtry min.node.size max.depth sample.fraction probability classification
-#> 1:          1         0.4786887       500    2             9         5             0.5        TRUE           TRUE
-#> 2:          2         0.4791386       500    2             5         5             0.8        TRUE           TRUE
-#> 3:          3         0.4419159       500    4             9         9             0.5        TRUE           TRUE
-#> 4:          4         0.4809325      1000    2             9         1             0.5        TRUE           TRUE
-#> 5:          5         0.4809325       500    2             9         1             0.8        TRUE           TRUE
-#> 6:          6         0.4329589      1000    6             1         9             0.5        TRUE           TRUE
+#>    setting_id metric_optim_mean      lambda alpha      family type.measure standardize
+#> 1:          1         0.4728578 0.003092562  0.70 multinomial        class        TRUE
+#> 2:          2         0.4737550 0.002639842  0.90 multinomial        class        TRUE
+#> 3:          3         0.4733064 0.003330451  0.65 multinomial        class        TRUE
+#> 4:          4         0.4733064 0.017972493  0.10 multinomial        class        TRUE
+#> 5:          5         0.4733064 0.003993887  0.45 multinomial        class        TRUE
+#> 6:          6         0.4728578 0.022574498  0.05 multinomial        class        TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   strategy = "bayesian",
   ncores = ncores,
   seed = seed
@@ -191,25 +211,29 @@ tuner_results_bayesian <- tuner$execute(k = 3)
 #> Registering parallel backend using 4 cores.
 
 head(tuner_results_bayesian)
-#>    Epoch setting_id num.trees mtry min.node.size max.depth sample.fraction gpUtility acqOptimum inBounds Elapsed      Score
-#> 1:     0          1       500    2             9         5             0.5        NA      FALSE     TRUE   1.597 -0.4791386
-#> 2:     0          2       500    2             5         5             0.8        NA      FALSE     TRUE   1.641 -0.4786887
-#> 3:     0          3       500    4             9         9             0.5        NA      FALSE     TRUE   2.161 -0.4392295
-#> 4:     0          4      1000    2             9         1             0.5        NA      FALSE     TRUE   1.635 -0.4809325
-#> 5:     0          5       500    2             9         1             0.8        NA      FALSE     TRUE   0.416 -0.4809325
-#> 6:     0          6      1000    6             1         9             0.5        NA      FALSE     TRUE   3.373 -0.4378800
-#>    metric_optim_mean errorMessage probability classification
-#> 1:         0.4791386           NA        TRUE           TRUE
-#> 2:         0.4786887           NA        TRUE           TRUE
-#> 3:         0.4392295           NA        TRUE           TRUE
-#> 4:         0.4809325           NA        TRUE           TRUE
-#> 5:         0.4809325           NA        TRUE           TRUE
-#> 6:         0.4378800           NA        TRUE           TRUE
+#>    Epoch setting_id alpha gpUtility acqOptimum inBounds Elapsed      Score metric_optim_mean      lambda errorMessage      family
+#> 1:     0          1  0.70        NA      FALSE     TRUE   1.666 -0.4728578         0.4728578 0.003092562           NA multinomial
+#> 2:     0          2  0.90        NA      FALSE     TRUE   1.635 -0.4737550         0.4737550 0.002639842           NA multinomial
+#> 3:     0          3  0.65        NA      FALSE     TRUE   1.657 -0.4733064         0.4733064 0.003330451           NA multinomial
+#> 4:     0          4  0.10        NA      FALSE     TRUE   1.744 -0.4733064         0.4733064 0.017972493           NA multinomial
+#> 5:     0          5  0.45        NA      FALSE     TRUE   0.577 -0.4733064         0.4733064 0.003993887           NA multinomial
+#> 6:     0          6  0.05        NA      FALSE     TRUE   0.687 -0.4728578         0.4728578 0.022574498           NA multinomial
+#>    type.measure standardize
+#> 1:        class        TRUE
+#> 2:        class        TRUE
+#> 3:        class        TRUE
+#> 4:        class        TRUE
+#> 5:        class        TRUE
+#> 6:        class        TRUE
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   fold_list = fold_list,
   ncores = ncores,
   seed = seed
@@ -234,19 +258,24 @@ validator_results <- validator$execute()
 #> CV fold: Fold2
 #> 
 #> CV fold: Fold3
-#> CV progress [========================================================================================================] 3/3 (100%)
-#>                                                                                                                                   
 
 head(validator_results)
-#>     fold performance num.trees mtry min.node.size max.depth sample.fraction probability classification
-#> 1: Fold1   0.4206685       500    4             9         9             0.8        TRUE           TRUE
-#> 2: Fold2   0.4011889       500    4             9         9             0.8        TRUE           TRUE
-#> 3: Fold3   0.4252033       500    4             9         9             0.8        TRUE           TRUE
+#>     fold performance alpha      lambda      family type.measure standardize
+#> 1: Fold1   0.3672581   0.7 0.003092562 multinomial        class        TRUE
+#> 2: Fold2   0.3524351   0.7 0.003092562 multinomial        class        TRUE
+#> 3: Fold3   0.3700659   0.7 0.003092562 multinomial        class        TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   strategy = "grid",
   fold_list = fold_list,
   k_tuning = 3L,
@@ -272,106 +301,55 @@ validator_results <- validator$execute()
 #> 
 #> CV fold: Fold1
 #> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
+#> Parameter settings [==================>-----------------------------------------------------------------------------] 2/10 ( 20%)
 #> Parameter settings [============================>-------------------------------------------------------------------] 3/10 ( 30%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> CV fold: Fold2
 #> CV progress [====================================================================>-----------------------------------] 2/3 ( 67%)
 #> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
+#> Parameter settings [==================>-----------------------------------------------------------------------------] 2/10 ( 20%)
 #> Parameter settings [============================>-------------------------------------------------------------------] 3/10 ( 30%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> CV fold: Fold3
 #> CV progress [========================================================================================================] 3/3 (100%)
 #>                                                                                                                                   
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
+#> Parameter settings [==================>-----------------------------------------------------------------------------] 2/10 ( 20%)
 #> Parameter settings [============================>-------------------------------------------------------------------] 3/10 ( 30%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================>----------------------------------------------------------] 4/10 ( 40%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================>------------------------------------------------] 5/10 ( 50%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=========================================================>--------------------------------------] 6/10 ( 60%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [==================================================================>-----------------------------] 7/10 ( 70%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [============================================================================>-------------------] 8/10 ( 80%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [=====================================================================================>----------] 9/10 ( 90%)
-#>  Classification: using 'classification error rate' as optimization metric.
-#> 
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
-#>  Classification: using 'classification error rate' as optimization metric.
 
 head(validator_results)
-#>     fold performance num.trees mtry min.node.size max.depth sample.fraction probability classification
-#> 1: Fold1   0.4505456      1000    6             1         9             0.5        TRUE           TRUE
-#> 2: Fold2   0.4162822      1000    6             1         9             0.5        TRUE           TRUE
-#> 3: Fold3   0.4508978      1000    6             1         9             0.5        TRUE           TRUE
+#>     fold performance      lambda alpha      family type.measure standardize
+#> 1: Fold1   0.3465038 0.006548214  0.90 multinomial        class        TRUE
+#> 2: Fold2   0.3475436 0.001710793  0.65 multinomial        class        TRUE
+#> 3: Fold3   0.3514970 0.038236018  0.10 multinomial        class        TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   strategy = "bayesian",
   fold_list = fold_list,
   k_tuning = 3L,
@@ -414,42 +392,55 @@ validator_results <- validator$execute()
 #> Registering parallel backend using 4 cores.
 
 head(validator_results)
-#>     fold performance num.trees mtry min.node.size max.depth sample.fraction probability classification
-#> 1: Fold1   0.4470914      1000    6             1         9       0.5000000        TRUE           TRUE
-#> 2: Fold2   0.4419416       636    6             2        12       0.9378338        TRUE           TRUE
-#> 3: Fold3   0.4737314       388    6             5        14       0.7457303        TRUE           TRUE
+#>     fold performance     alpha      lambda      family type.measure standardize
+#> 1: Fold1   0.3652609 0.7000000 0.004817737 multinomial        class        TRUE
+#> 2: Fold2   0.3416288 0.4178147 0.017108341 multinomial        class        TRUE
+#> 3: Fold3   0.3467740 0.1000000 0.041963982 multinomial        class        TRUE
+```
 
 
-## -----------------------------------------------------------------------------
-preds_ranger <- mlexperiments::predictions(
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
+preds_glmnet <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
-perf_ranger <- mlexperiments::performance(
+```{r}
+perf_glmnet <- mlexperiments::performance(
   object = validator,
-  prediction_results = preds_ranger,
+  prediction_results = preds_glmnet,
   y_ground_truth = test_y
 )
-perf_ranger
+perf_glmnet
 #>    model performance
-#> 1: Fold1   0.4466305
-#> 2: Fold2   0.4601201
-#> 3: Fold3   0.4742046
+#> 1: Fold1   0.3606304
+#> 2: Fold2   0.3603913
+#> 3: Fold3   0.3529292
+```
 
+## Appendix I: Grid-Search with Target Weigths
 
-## -----------------------------------------------------------------------------
+Here, `glmnet`'s [`weights`-argument](https://rdrr.io/cran/glmnet/man/glmnet.html) is used to rescale the case-weights during the training.
+
+```{r}
 # define the target weights
 y_weights <- ifelse(train_y == "n", 0.8, ifelse(train_y == "ei", 1.2, 1))
 head(y_weights)
 #> [1] 1.2 1.2 0.0 0.8 0.8 0.0
+```
 
-
-## -----------------------------------------------------------------------------
+```{r}
 tuner_w_weights <- mlexperiments::MLTuneParameters$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   strategy = "grid",
   ncores = ncores,
   seed = seed
@@ -479,19 +470,23 @@ tuner_results_grid <- tuner_w_weights$execute(k = 3)
 #> Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  
 
 head(tuner_results_grid)
-#>    setting_id metric_optim_mean num.trees  mtry min.node.size max.depth sample.fraction probability classification
-#>         <int>             <num>     <num> <num>         <num>     <num>           <num>      <lgcl>         <lgcl>
-#> 1:          1         0.4665865       500     2             9         5             0.5        TRUE           TRUE
-#> 2:          2         0.4656941       500     2             5         5             0.8        TRUE           TRUE
-#> 3:          3         0.4486635       500     4             9         9             0.5        TRUE           TRUE
-#> 4:          4         0.4809325      1000     2             9         1             0.5        TRUE           TRUE
-#> 5:          5         0.4809325       500     2             9         1             0.8        TRUE           TRUE
-#> 6:          6         0.4544915      1000     6             1         9             0.5        TRUE           TRUE
+#>    setting_id metric_optim_mean      lambda alpha      family type.measure standardize
+#>         <int>             <num>       <num> <num>      <char>       <char>      <lgcl>
+#> 1:          1         0.5428029 0.015786209  0.70 multinomial        class        TRUE
+#> 2:          2         0.5410926 0.005314924  0.90 multinomial        class        TRUE
+#> 3:          3         0.5425178 0.017000533  0.65 multinomial        class        TRUE
+#> 4:          4         0.5429929 0.027372552  0.10 multinomial        class        TRUE
+#> 5:          5         0.5422328 0.020387093  0.45 multinomial        class        TRUE
+#> 6:          6         0.5428979 0.034381521  0.05 multinomial        class        TRUE
+```
 
+## Appendix II: k-Fold Cross Validation with Target Weigths
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
-  learner = mllrnrs::LearnerRanger$new(),
+  learner = mllrnrs::LearnerGlmnet$new(
+    metric_optimization_higher_better = FALSE
+  ),
   fold_list = fold_list,
   ncores = ncores,
   seed = seed
@@ -524,13 +519,13 @@ validator_results <- validator$execute()
 #>                                                                                                                                   
 
 head(validator_results)
-#>      fold performance num.trees  mtry min.node.size max.depth sample.fraction probability classification
-#>    <char>       <num>     <num> <num>         <num>     <num>           <num>      <lgcl>         <lgcl>
-#> 1:  Fold1   0.4565664       500     4             9         9             0.8        TRUE           TRUE
-#> 2:  Fold2   0.4266609       500     4             9         9             0.8        TRUE           TRUE
-#> 3:  Fold3   0.4576471       500     4             9         9             0.8        TRUE           TRUE
+#>      fold performance alpha      lambda      family type.measure standardize
+#>    <char>       <num> <num>       <num>      <char>       <char>      <lgcl>
+#> 1:  Fold1   0.4139240   0.7 0.003092562 multinomial        class        TRUE
+#> 2:  Fold2   0.3570648   0.7 0.003092562 multinomial        class        TRUE
+#> 3:  Fold3   0.3831881   0.7 0.003092562 multinomial        class        TRUE
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```

@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "xgboost: Regression"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{xgboost: Regression}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_xgboost.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_xgboost.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("BostonHousing")
 dataset <- BostonHousing |>
@@ -13,9 +34,11 @@ dataset <- BostonHousing |>
 
 feature_cols <- colnames(dataset)[1:13]
 target_col <- "medv"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -34,9 +57,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
 options("mlexperiments.bayesian.max_init" = 10L)
 options("mlexperiments.optim.xgb.nrounds" = 100L)
 options("mlexperiments.optim.xgb.early_stopping_rounds" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -56,18 +81,24 @@ test_x <- model.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- log(dataset[data_split$test, get(target_col)])
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
 learner_args <- list(
   objective = "reg:squarederror",
@@ -110,9 +141,14 @@ optim_args <- list(
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerXgboost$new(
     metric_optimization_higher_better = FALSE
@@ -156,9 +192,12 @@ head(tuner_results_grid)
 #> 4:        rmse
 #> 5:        rmse
 #> 6:        rmse
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerXgboost$new(
     metric_optimization_higher_better = FALSE
@@ -200,9 +239,11 @@ head(tuner_results_bayesian)
 #> 4: -0.1609879         0.1609879      66           NA reg:squarederror        rmse
 #> 5: -0.1573682         0.1573682     100           NA reg:squarederror        rmse
 #> 6: -0.1635603         0.1635603      92           NA reg:squarederror        rmse
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerXgboost$new(
     metric_optimization_higher_better = FALSE
@@ -237,9 +278,14 @@ head(validator_results)
 #> 1: Fold1  0.04193925       0.6                1                1           0.1         5      92 reg:squarederror        rmse
 #> 2: Fold2  0.05079392       0.6                1                1           0.1         5      92 reg:squarederror        rmse
 #> 3: Fold3  0.03915493       0.6                1                1           0.1         5      92 reg:squarederror        rmse
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerXgboost$new(
     metric_optimization_higher_better = FALSE
@@ -302,9 +348,12 @@ head(validator_results)
 #> 1: Fold1  0.04291802      64       0.8              0.8                5           0.1         5 reg:squarederror        rmse
 #> 2: Fold2  0.05138479      76       0.6              1.0                1           0.1         5 reg:squarederror        rmse
 #> 3: Fold3  0.03818053      36       0.6              0.8                5           0.2         5 reg:squarederror        rmse
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerXgboost$new(
     metric_optimization_higher_better = FALSE
@@ -355,16 +404,23 @@ head(validator_results)
 #> 1: Fold1  0.04147964 0.6225939        0.9208933                5     0.1326066         5      59 reg:squarederror        rmse
 #> 2: Fold2  0.05881907 1.0000000        0.8000000                1     0.1000000         5      94 reg:squarederror        rmse
 #> 3: Fold3  0.03890190 0.6000000        1.0000000                5     0.2000000         5      37 reg:squarederror        rmse
+```
 
 
-## -----------------------------------------------------------------------------
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
 preds_xgboost <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
+```{r}
 perf_xgboost <- mlexperiments::performance(
   object = validator,
   prediction_results = preds_xgboost,
@@ -376,8 +432,8 @@ perf_xgboost
 #> 1: Fold1  0.04322328 0.02725729 0.001868252 0.1188479 0.04074989 0.1650978 0.04322328 0.8227146 4.224880
 #> 2: Fold2  0.04730978 0.03081692 0.002238216 0.1235033 0.04247960 0.1755475 0.04730978 0.7995622 4.776623
 #> 3: Fold3  0.03977942 0.02204549 0.001582402 0.1090010 0.03781531 0.1484773 0.03977942 0.8566129 3.417052
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```

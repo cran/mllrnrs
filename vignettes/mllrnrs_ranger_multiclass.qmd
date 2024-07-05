@@ -1,10 +1,31 @@
-## ----setup--------------------------------------------------------------------
+---
+title: "ranger: Multiclass Classification"
+vignette: >
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{ranger: Multiclass Classification}
+  %\VignetteEngine{quarto::html}
+editor_options: 
+  chunk_output_type: console
+
+execute:
+  eval: false
+  collapse: true
+  comment: "#>"
+---
+
+```{r setup}
 # nolint start
 library(mlexperiments)
 library(mllrnrs)
+```
 
+See [https://github.com/kapsner/mllrnrs/blob/main/R/learner_ranger.R](https://github.com/kapsner/mllrnrs/blob/main/R/learner_ranger.R) for implementation details.
 
-## -----------------------------------------------------------------------------
+# Preprocessing
+
+## Import and Prepare Data
+
+```{r}
 library(mlbench)
 data("DNA")
 dataset <- DNA |>
@@ -13,9 +34,11 @@ dataset <- DNA |>
 
 feature_cols <- colnames(dataset)[160:180]
 target_col <- "Class"
+```
 
+## General Configurations
 
-## -----------------------------------------------------------------------------
+```{r}
 seed <- 123
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
@@ -32,9 +55,11 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   )
 }
 options("mlexperiments.bayesian.max_init" = 10L)
+```
 
+## Generate Training- and Test Data
 
-## -----------------------------------------------------------------------------
+```{r}
 data_split <- splitTools::partition(
   y = dataset[, get(target_col)],
   p = c(train = 0.7, test = 0.3),
@@ -54,18 +79,24 @@ test_x <- model.matrix(
   dataset[data_split$test, .SD, .SDcols = feature_cols]
 )
 test_y <- dataset[data_split$test, get(target_col)]
+```
 
+## Generate Training Data Folds
 
-## -----------------------------------------------------------------------------
+```{r}
 fold_list <- splitTools::create_folds(
   y = train_y,
   k = 3,
   type = "stratified",
   seed = seed
 )
+```
 
+# Experiments
 
-## -----------------------------------------------------------------------------
+## Prepare Experiments
+
+```{r}
 # required learner arguments, not optimized
 learner_args <- list(probability = TRUE, classification = TRUE)
 
@@ -105,9 +136,14 @@ optim_args <- list(
   kappa = 3.5,
   acq = "ucb"
 )
+```
 
 
-## -----------------------------------------------------------------------------
+## Hyperparameter Tuning
+
+### Grid Search
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerRanger$new(),
   strategy = "grid",
@@ -163,9 +199,12 @@ head(tuner_results_grid)
 #> 4:          4         0.4809325      1000    2             9         1             0.5        TRUE           TRUE
 #> 5:          5         0.4809325       500    2             9         1             0.8        TRUE           TRUE
 #> 6:          6         0.4329589      1000    6             1         9             0.5        TRUE           TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+### Bayesian Optimization
+
+```{r}
 tuner <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerRanger$new(),
   strategy = "bayesian",
@@ -205,9 +244,11 @@ head(tuner_results_bayesian)
 #> 4:         0.4809325           NA        TRUE           TRUE
 #> 5:         0.4809325           NA        TRUE           TRUE
 #> 6:         0.4378800           NA        TRUE           TRUE
+```
 
+## k-Fold Cross Validation
 
-## -----------------------------------------------------------------------------
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerRanger$new(),
   fold_list = fold_list,
@@ -242,9 +283,14 @@ head(validator_results)
 #> 1: Fold1   0.4206685       500    4             9         9             0.8        TRUE           TRUE
 #> 2: Fold2   0.4011889       500    4             9         9             0.8        TRUE           TRUE
 #> 3: Fold3   0.4252033       500    4             9         9             0.8        TRUE           TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+## Nested Cross Validation
+
+### Inner Grid Search
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerRanger$new(),
   strategy = "grid",
@@ -367,9 +413,12 @@ head(validator_results)
 #> 1: Fold1   0.4505456      1000    6             1         9             0.5        TRUE           TRUE
 #> 2: Fold2   0.4162822      1000    6             1         9             0.5        TRUE           TRUE
 #> 3: Fold3   0.4508978      1000    6             1         9             0.5        TRUE           TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+### Inner Bayesian Optimization
+
+```{r}
 validator <- mlexperiments::MLNestedCV$new(
   learner = mllrnrs::LearnerRanger$new(),
   strategy = "bayesian",
@@ -418,16 +467,23 @@ head(validator_results)
 #> 1: Fold1   0.4470914      1000    6             1         9       0.5000000        TRUE           TRUE
 #> 2: Fold2   0.4419416       636    6             2        12       0.9378338        TRUE           TRUE
 #> 3: Fold3   0.4737314       388    6             5        14       0.7457303        TRUE           TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+## Holdout Test Dataset Performance
+
+### Predict Outcome in Holdout Test Dataset
+
+```{r}
 preds_ranger <- mlexperiments::predictions(
   object = validator,
   newdata = test_x
 )
+```
 
+### Evaluate Performance on Holdout Test Dataset
 
-## -----------------------------------------------------------------------------
+```{r}
 perf_ranger <- mlexperiments::performance(
   object = validator,
   prediction_results = preds_ranger,
@@ -438,16 +494,20 @@ perf_ranger
 #> 1: Fold1   0.4466305
 #> 2: Fold2   0.4601201
 #> 3: Fold3   0.4742046
+```
 
+## Appendix I: Grid-Search with Target Weigths
 
-## -----------------------------------------------------------------------------
+Here, `ranger`'s [`case.weights`-argument](https://rdrr.io/cran/ranger/man/ranger.html) is used to rescale the case-weights during the training.
+
+```{r}
 # define the target weights
 y_weights <- ifelse(train_y == "n", 0.8, ifelse(train_y == "ei", 1.2, 1))
 head(y_weights)
 #> [1] 1.2 1.2 0.0 0.8 0.8 0.0
+```
 
-
-## -----------------------------------------------------------------------------
+```{r}
 tuner_w_weights <- mlexperiments::MLTuneParameters$new(
   learner = mllrnrs::LearnerRanger$new(),
   strategy = "grid",
@@ -487,9 +547,12 @@ head(tuner_results_grid)
 #> 4:          4         0.4809325      1000     2             9         1             0.5        TRUE           TRUE
 #> 5:          5         0.4809325       500     2             9         1             0.8        TRUE           TRUE
 #> 6:          6         0.4544915      1000     6             1         9             0.5        TRUE           TRUE
+```
 
 
-## -----------------------------------------------------------------------------
+## Appendix II: k-Fold Cross Validation with Target Weigths
+
+```{r}
 validator <- mlexperiments::MLCrossValidation$new(
   learner = mllrnrs::LearnerRanger$new(),
   fold_list = fold_list,
@@ -529,8 +592,8 @@ head(validator_results)
 #> 1:  Fold1   0.4565664       500     4             9         9             0.8        TRUE           TRUE
 #> 2:  Fold2   0.4266609       500     4             9         9             0.8        TRUE           TRUE
 #> 3:  Fold3   0.4576471       500     4             9         9             0.8        TRUE           TRUE
+```
 
-
-## ----include=FALSE------------------------------------------------------------
+```{r include=FALSE}
 # nolint end
-
+```
