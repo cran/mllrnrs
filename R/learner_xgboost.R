@@ -21,6 +21,7 @@
 #'
 #' @examples
 #' # binary classification
+#' Sys.setenv("OMP_THREAD_LIMIT" = 2)
 #'
 #' library(mlbench)
 #' data("PimaIndiansDiabetes2")
@@ -36,7 +37,8 @@
 #'    colsample_bytree = seq(0.6, 1, .2),
 #'    min_child_weight = seq(1, 5, 4),
 #'    learning_rate = seq(0.1, 0.2, 0.1),
-#'    max_depth = seq(1, 5, 4)
+#'    max_depth = seq(1, 5, 4),
+#'    nthread = 2
 #' )
 #'
 #' train_x <- model.matrix(
@@ -56,7 +58,7 @@
 #'     metric_optimization_higher_better = FALSE
 #'   ),
 #'   fold_list = fold_list,
-#'   ncores = 2,
+#'   ncores = 2L,
 #'   seed = 123
 #' )
 #' xgboost_cv$learner_args <- c(
@@ -174,6 +176,8 @@ xgboost_optimization <- function(
   params <- temp_list$params
   dtrain <- temp_list$dtrain
 
+  params$nthread <- ncores
+
   # use the same folds for all algorithms
   # folds: list provides a possibility to use a list of pre-defined CV
   # folds (each element must be a vector of test fold's indices).
@@ -193,8 +197,7 @@ xgboost_optimization <- function(
     early_stopping_rounds = as.integer(
       options("mlexperiments.optim.xgb.early_stopping_rounds")
     ),
-    verbose = as.logical(options("mlexperiments.xgb.verbose")),
-    nthread = ncores
+    verbose = as.logical(options("mlexperiments.xgb.verbose"))
   )
 
   set.seed(seed)
@@ -262,12 +265,13 @@ xgboost_fit <- function(x, y, nrounds, ncores, seed, ...) {
   params <- temp_list$params
   dtrain_full <- temp_list$dtrain
 
+  params$nthread <- ncores
+
   # train final model with best nrounds
   fit_args <- list(
     data = dtrain_full,
     params = params,
     print_every_n = as.integer(options("mlexperiments.xgb.print_every_n")),
-    nthread = ncores,
     nrounds = nrounds,
     watchlist = list(
       train = dtrain_full  # setup a watchlist (the training data here)
