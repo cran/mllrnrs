@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.13">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -184,7 +185,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># mlexperiments::MLNestedCV</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>predict_args <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>performance_metric <span class="ot">&lt;-</span> <span class="fu">metric</span>(<span class="st">&quot;auc&quot;</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>performance_metric_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">positive =</span> <span class="st">&quot;1&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>performance_metric_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">positive =</span> <span class="st">&quot;1&quot;</span>, <span class="at">negative =</span> <span class="st">&quot;0&quot;</span>)</span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>return_models <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># required for grid search and initialization of bayesian optimization</span></span>
@@ -475,14 +476,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;binary&quot;</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>perf_xgboost</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    model performance       auc     prauc sensitivity specificity       ppv       npv tn tp fn fp       tnr       tpr       fnr</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.7922752 0.7922752 0.6016630   0.5128205   0.8734177 0.6666667 0.7840909 69 20 19 10 0.8734177 0.5128205 0.4871795</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.7687439 0.7687439 0.5601442   0.3846154   0.8860759 0.6250000 0.7446809 70 15 24  9 0.8860759 0.3846154 0.6153846</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.7594937 0.7594937 0.6142299   0.4871795   0.8481013 0.6129032 0.7701149 67 19 20 12 0.8481013 0.4871795 0.5128205</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          fpr    bbrier       acc        ce     fbeta</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.1265823 0.1726355 0.7542373 0.2457627 0.5797101</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.1139241 0.1885316 0.7203390 0.2796610 0.4761905</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.1518987 0.1854326 0.7288136 0.2711864 0.5428571</span></span></code></pre></div>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC     Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR       FPR       FNR       PPV</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.7922752 0.7922752 0.1726355   0.2198065 0.6931191    20    69    10    19 0.5128205 0.8734177 0.1265823 0.4871795 0.6666667</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.7687439 0.7687439 0.1885316   0.1479670 0.6353457    15    70     9    24 0.3846154 0.8860759 0.1139241 0.6153846 0.6250000</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.7594937 0.7594937 0.1854326   0.1619724 0.6676404    19    67    12    20 0.4871795 0.8481013 0.1518987 0.5128205 0.6129032</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV       FDR       MCC        F1     GMEAN       GPR       ACC      MMCE       BER</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.7840909 0.3333333 0.4172527 0.5797101 0.6692582 0.5847053 0.7542373 0.2457627 0.3068809</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.7446809 0.3750000 0.3163375 0.4761905 0.5837794 0.4902903 0.7203390 0.2796610 0.3646543</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.7701149 0.3870968 0.3583554 0.5428571 0.6427889 0.5464374 0.7288136 0.2711864 0.3323596</span></span></code></pre></div>
 </div>
 
 

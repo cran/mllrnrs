@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.13">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -472,10 +473,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;regression&quot;</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>perf_glmnet</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    model performance        mse        msle       mae       mape      rmse      rmsle       rsq      sse</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1  0.05117877 0.03938447 0.002619267 0.1365514 0.04579938 0.1984552 0.05117877 0.7438377 6.104593</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2  0.05218917 0.03992086 0.002723709 0.1407370 0.04763746 0.1998021 0.05218917 0.7403489 6.187734</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3  0.04952504 0.03651949 0.002452730 0.1373768 0.04651953 0.1911007 0.04952504 0.7624719 5.660522</span></span></code></pre></div>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance      SSE        MSE      RMSE       MEDSE      SAE       MAE      MEDAE       RSQ    EXPVAR      RRSE       RAE</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;    &lt;num&gt;      &lt;num&gt;     &lt;num&gt;       &lt;num&gt;    &lt;num&gt;     &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1  0.05117877 6.104593 0.03938447 0.1984552 0.008503308 21.16547 0.1365514 0.09221338 0.7438377 0.8071741 0.5061248 0.4610239</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2  0.05218917 6.187734 0.03992086 0.1998021 0.008101127 21.81423 0.1407370 0.09000626 0.7403489 0.7751244 0.5095597 0.4751550</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3  0.04952504 5.660522 0.03651949 0.1911007 0.011477895 21.29340 0.1373768 0.10713494 0.7624719 0.7484308 0.4873686 0.4638104</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          MAPE KendallTau SpearmanRho</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;num&gt;      &lt;num&gt;       &lt;num&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.04579938  0.7257249   0.8878970</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.04763746  0.7179964   0.8800768</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.04651953  0.7216926   0.8919303</span></span></code></pre></div>
 </div>
 
 
