@@ -15,62 +15,66 @@
 #'
 #' @examples
 #' # binary classification
+#' if (requireNamespace("glmnet", quietly = TRUE) &&
+#' requireNamespace("mlbench", quietly = TRUE) &&
+#' requireNamespace("measures", quietly = TRUE)) {
 #'
-#' library(mlbench)
-#' data("PimaIndiansDiabetes2")
-#' dataset <- PimaIndiansDiabetes2 |>
-#'   data.table::as.data.table() |>
-#'   na.omit()
+#'   library(mlbench)
+#'   data("PimaIndiansDiabetes2")
+#'   dataset <- PimaIndiansDiabetes2 |>
+#'     data.table::as.data.table() |>
+#'     na.omit()
 #'
-#' seed <- 123
-#' feature_cols <- colnames(dataset)[1:8]
+#'   seed <- 123
+#'   feature_cols <- colnames(dataset)[1:8]
 #'
-#' train_x <- model.matrix(
-#'   ~ -1 + .,
-#'   dataset[, .SD, .SDcols = feature_cols]
-#' )
-#' train_y <- as.integer(dataset[, get("diabetes")]) - 1L
+#'   train_x <- model.matrix(
+#'     ~ -1 + .,
+#'     dataset[, .SD, .SDcols = feature_cols]
+#'   )
+#'   train_y <- as.integer(dataset[, get("diabetes")]) - 1L
 #'
-#' fold_list <- splitTools::create_folds(
-#'   y = train_y,
-#'   k = 3,
-#'   type = "stratified",
-#'   seed = seed
-#' )
-#' glmnet_cv <- mlexperiments::MLCrossValidation$new(
-#'   learner = mllrnrs::LearnerGlmnet$new(
-#'     metric_optimization_higher_better = FALSE
-#'   ),
-#'   fold_list = fold_list,
-#'   ncores = 2,
-#'   seed = 123
-#' )
-#' glmnet_cv$learner_args <- list(
-#'   alpha = 1,
-#'   lambda = 0.1,
-#'   family = "binomial",
-#'   type.measure = "class",
-#'   standardize = TRUE
-#' )
-#' glmnet_cv$predict_args <- list(type = "response")
-#' glmnet_cv$performance_metric_args <- list(positive = "1", negative = "0")
-#' glmnet_cv$performance_metric <- mlexperiments::metric("AUC")
+#'   fold_list <- splitTools::create_folds(
+#'     y = train_y,
+#'     k = 3,
+#'     type = "stratified",
+#'     seed = seed
+#'   )
+#'   glmnet_cv <- mlexperiments::MLCrossValidation$new(
+#'     learner = mllrnrs::LearnerGlmnet$new(
+#'       metric_optimization_higher_better = FALSE
+#'     ),
+#'     fold_list = fold_list,
+#'     ncores = 2,
+#'     seed = 123
+#'   )
+#'   glmnet_cv$learner_args <- list(
+#'     alpha = 1,
+#'     lambda = 0.1,
+#'     family = "binomial",
+#'     type.measure = "class",
+#'     standardize = TRUE
+#'   )
+#'   glmnet_cv$predict_args <- list(type = "response")
+#'   glmnet_cv$performance_metric_args <- list(positive = "1", negative = "0")
+#'   glmnet_cv$performance_metric <- mlexperiments::metric("AUC")
 #'
-#' # set data
-#' glmnet_cv$set_data(
-#'   x = train_x,
-#'   y = train_y
-#' )
+#'   # set data
+#'   glmnet_cv$set_data(
+#'     x = train_x,
+#'     y = train_y
+#'   )
 #'
-#' glmnet_cv$execute()
+#'   glmnet_cv$execute()
+#' }
 
 #' @export
 #'
-LearnerGlmnet <- R6::R6Class( # nolint
+LearnerGlmnet <- R6::R6Class(
+  # nolint
   classname = "LearnerGlmnet",
   inherit = mlexperiments::MLLearnerBase,
   public = list(
-
     #' @description
     #' Create a new `LearnerGlmnet` object.
     #'
@@ -81,9 +85,12 @@ LearnerGlmnet <- R6::R6Class( # nolint
     #' @return A new `LearnerGlmnet` R6 object.
     #'
     #' @examples
-    #' LearnerGlmnet$new(metric_optimization_higher_better = FALSE)
+    #' if (requireNamespace("glmnet", quietly = TRUE)) {
+    #'   LearnerGlmnet$new(metric_optimization_higher_better = FALSE)
+    #' }
     #'
-    initialize = function(metric_optimization_higher_better) { # nolint
+    initialize = function(metric_optimization_higher_better) {
+      # nolint
       if (!requireNamespace("glmnet", quietly = TRUE)) {
         stop(
           paste0(
@@ -113,8 +120,10 @@ LearnerGlmnet <- R6::R6Class( # nolint
               x %in% names(kwargs$params)
             }
           )),
-          .check_glmnet_params(kwargs$params,
-                               self$metric_optimization_higher_better)
+          .check_glmnet_params(
+            kwargs$params,
+            self$metric_optimization_higher_better
+          )
         )
         return(do.call(glmnet_optimization, kwargs))
       }
@@ -129,7 +138,7 @@ LearnerGlmnet <- R6::R6Class( # nolint
               x %in% names(kwargs)
             }
           )),
-          .check_glmnet_params(kwargs, self$metric_optimization_higher_better)
+          check_glmnet_params(kwargs, self$metric_optimization_higher_better)
         )
         return(do.call(glmnet_bsF, kwargs))
       }
@@ -137,10 +146,10 @@ LearnerGlmnet <- R6::R6Class( # nolint
   )
 )
 
-.check_glmnet_params <- function(params, higher_better) {
+check_glmnet_params <- function(params, higher_better) {
   stopifnot(
-    params$family %in% c("gaussian", "binomial", "poisson",
-                         "multinomial", "mgaussian"),
+    params$family %in%
+      c("gaussian", "binomial", "poisson", "multinomial", "mgaussian"),
     params$type.measure != "C",
     ifelse(
       test = params$family == "binomial" &&
@@ -154,21 +163,17 @@ LearnerGlmnet <- R6::R6Class( # nolint
 
 
 glmnet_ce <- function() {
-  c("glmnet_optimization", "glmnet_fit")
+  c("glmnet_optimization", "glmnet_fit", "check_glmnet_params", "glmnet_bsF")
 }
 
-glmnet_bsF <- function(...) { # nolint
+glmnet_bsF <- function(...) {
   kwargs <- list(...)
-  # call to glmnet_optimization here with ncores = 1, since the
-  # Bayesian search is parallelized already / "FUN is fitted n times
-  # in m threads"
-  set.seed(seed)#, kind = "L'Ecuyer-CMRG")
   bayes_opt_glmnet <- glmnet_optimization(
     x = x,
     y = y,
     params = kwargs,
     fold_list = method_helper$fold_list,
-    ncores = 1L, # important, as bayesian search is already parallelized
+    ncores = ncores,
     seed = seed
   )
 
@@ -182,12 +187,12 @@ glmnet_bsF <- function(...) { # nolint
 
 # tune lambda
 glmnet_optimization <- function(
-    x,
-    y,
-    params,
-    fold_list,
-    ncores,
-    seed
+  x,
+  y,
+  params,
+  fold_list,
+  ncores,
+  seed
 ) {
   stopifnot(
     is.list(params),
@@ -205,7 +210,8 @@ glmnet_optimization <- function(
     ))
   )
 
-  FUN <- ifelse( # nolint
+  FUN <- ifelse(
+    # nolint
     test = params$family == "binomial" &&
       params$type.measure == "auc",
     yes = max,
@@ -250,8 +256,10 @@ glmnet_optimization <- function(
   # "weights"
   if ("case_weights" %in% names(cv_args)) {
     stopifnot(
-      "late fail: `case_weights` must be of same length as `y`" =
-        length(cv_args$case_weights) == length(y)
+      "late fail: `case_weights` must be of same length as `y`" = length(
+        cv_args$case_weights
+      ) ==
+        length(y)
     )
     names(cv_args)[which(names(cv_args) == "case_weights")] <-
       "weights"
@@ -271,18 +279,20 @@ glmnet_optimization <- function(
 
 glmnet_fit <- function(x, y, ncores, seed, ...) {
   kwargs <- list(...)
-  stopifnot((sapply(
-    X = c("lambda", "alpha", "family"),
-    FUN = function(x) {
-      x %in% names(kwargs)
-    }
-  )),
-  (!sapply(
-    X = c("x", "y"),
-    FUN = function(x) {
-      x %in% names(kwargs)
-    }
-  )))
+  stopifnot(
+    (sapply(
+      X = c("lambda", "alpha", "family"),
+      FUN = function(x) {
+        x %in% names(kwargs)
+      }
+    )),
+    (!sapply(
+      X = c("x", "y"),
+      FUN = function(x) {
+        x %in% names(kwargs)
+      }
+    ))
+  )
 
   fit_args <- kdry::list.append(
     list(
@@ -296,8 +306,10 @@ glmnet_fit <- function(x, y, ncores, seed, ...) {
   # "weights"
   if ("case_weights" %in% names(fit_args)) {
     stopifnot(
-      "late fail: `case_weights` must be of same length as `y`" =
-        length(fit_args$case_weights) == length(y)
+      "late fail: `case_weights` must be of same length as `y`" = length(
+        fit_args$case_weights
+      ) ==
+        length(y)
     )
     names(fit_args)[which(names(fit_args) == "case_weights")] <-
       "weights"
@@ -321,7 +333,7 @@ glmnet_predict <- function(model, newdata, ncores, ...) {
   preds <- do.call(stats::predict, pred_args)
   if (!is.null(kwargs$reshape)) {
     if (isTRUE(kwargs$reshape)) {
-      preds <-  preds[, , 1]
+      preds <- preds[,, 1]
       preds <- kdry::mlh_reshape(preds)
     }
   } else {

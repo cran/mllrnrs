@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.12">
+<meta name="generator" content="quarto-1.9.16">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -246,9 +246,9 @@ text-decoration: underline; }
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.bayesian.max_init&quot;</span> <span class="ot">=</span> <span class="dv">10</span>L)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.nrounds&quot;</span> <span class="ot">=</span> <span class="dv">100</span>L)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.early_stopping_rounds&quot;</span> <span class="ot">=</span> <span class="dv">10</span>L)</span></code></pre></div>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.bayesian.max_init&quot;</span> <span class="ot">=</span> <span class="dv">4</span>L)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.nrounds&quot;</span> <span class="ot">=</span> <span class="dv">20</span>L)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.early_stopping_rounds&quot;</span> <span class="ot">=</span> <span class="dv">5</span>L)</span></code></pre></div>
 </div>
 <h2 id="generate-training--and-test-data">Generate Training- and Test Data</h2>
 <div class="cell">
@@ -322,7 +322,7 @@ text-decoration: underline; }
 <span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_depth =</span>  <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">10</span>L)</span>
 <span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>optim_args <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">iters.n =</span> ncores,</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_iter =</span> ncores,</span>
 <span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">kappa =</span> <span class="fl">3.5</span>,</span>
 <span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">acq =</span> <span class="st">&quot;ucb&quot;</span></span>
 <span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
@@ -349,7 +349,7 @@ text-decoration: underline; }
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>tuner_results_grid <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================&gt;-----------------------------------------------------------------------------] 2/10 ( 20%)</span></span>
 <span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================&gt;-------------------------------------------------------------------] 3/10 ( 30%)</span></span>
 <span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================&gt;----------------------------------------------------------] 4/10 ( 40%)</span></span>
@@ -358,23 +358,17 @@ text-decoration: underline; }
 <span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
 <span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
 <span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)</span></span>
 <span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds subsample colsample_bytree min_child_weight learning_rate max_depth       objective</span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.4121967      34       0.6              0.8                5           0.2         1 binary:logistic</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.3890956      57       1.0              0.8                5           0.1         5 binary:logistic</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.3925308     100       0.8              0.8                5           0.1         1 binary:logistic</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.4082505      34       0.6              0.8                5           0.2         5 binary:logistic</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.3975907      36       1.0              0.8                1           0.1         5 binary:logistic</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.3932451      66       0.8              0.8                5           0.1         5 binary:logistic</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    eval_metric</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     logloss</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     logloss</span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     logloss</span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     logloss</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     logloss</span></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     logloss</span></span></code></pre></div>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds subsample colsample_bytree min_child_weight learning_rate max_depth       objective eval_metric</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;             &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;          &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.3977489      62       0.6              0.8                5           0.2         1 binary:logistic     logloss</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.3915203      67       1.0              0.8                5           0.1         5 binary:logistic     logloss</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.3972711      96       0.8              0.8                5           0.1         1 binary:logistic     logloss</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.3951791      62       0.6              0.8                5           0.2         5 binary:logistic     logloss</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.3786375      44       1.0              0.8                1           0.1         5 binary:logistic     logloss</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.3956902      75       0.8              0.8                5           0.1         5 binary:logistic     logloss</span></span></code></pre></div>
 </div>
 <h3 id="bayesian-optimization">Bayesian Optimization</h3>
 <div class="cell">
@@ -401,24 +395,26 @@ text-decoration: underline; }
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>tuner_results_bayesian <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
 <span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    Epoch setting_id subsample colsample_bytree min_child_weight learning_rate max_depth gpUtility acqOptimum inBounds Elapsed</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1       0.6              0.8                5           0.2         1        NA      FALSE     TRUE   1.695</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2       1.0              0.8                5           0.1         5        NA      FALSE     TRUE   1.702</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3       0.8              0.8                5           0.1         1        NA      FALSE     TRUE   1.734</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4       0.6              0.8                5           0.2         5        NA      FALSE     TRUE   1.724</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5       1.0              0.8                1           0.1         5        NA      FALSE     TRUE   0.849</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6       0.8              0.8                5           0.1         5        NA      FALSE     TRUE   0.850</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         Score metric_optim_mean nrounds errorMessage       objective eval_metric</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: -0.4089735         0.4089735      56           NA binary:logistic     logloss</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: -0.3970937         0.3970937      49           NA binary:logistic     logloss</span></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: -0.4013240         0.4013240     100           NA binary:logistic     logloss</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: -0.4070968         0.4070968      69           NA binary:logistic     logloss</span></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: -0.3819756         0.3819756      39           NA binary:logistic     logloss</span></span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: -0.3987643         0.3987643      99           NA binary:logistic     logloss</span></span></code></pre></div>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;num&gt;      &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;lgcl&gt;   &lt;lgcl&gt;   &lt;num&gt;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1       0.6              0.8                5           0.2         1        NA      FALSE     TRUE   0.890</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2       1.0              0.8                5           0.1         5        NA      FALSE     TRUE   0.892</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3       0.8              0.8                5           0.1         1        NA      FALSE     TRUE   0.991</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4       0.6              0.8                5           0.2         5        NA      FALSE     TRUE   0.911</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5       1.0              0.8                1           0.1         5        NA      FALSE     TRUE   0.173</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6       0.8              0.8                5           0.1         5        NA      FALSE     TRUE   0.183</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         Score metric_optim_mean nrounds errorMessage       objective eval_metric</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;num&gt;             &lt;num&gt;   &lt;int&gt;       &lt;lgcl&gt;          &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: -0.3977489         0.3977489      62           NA binary:logistic     logloss</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: -0.3915203         0.3915203      67           NA binary:logistic     logloss</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: -0.3972711         0.3972711      96           NA binary:logistic     logloss</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: -0.3951791         0.3951791      62           NA binary:logistic     logloss</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: -0.3786375         0.3786375      44           NA binary:logistic     logloss</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: -0.3956902         0.3956902      75           NA binary:logistic     logloss</span></span></code></pre></div>
 </div>
 <h2 id="k-fold-cross-validation">k-Fold Cross Validation</h2>
 <div class="cell">
@@ -444,18 +440,19 @@ text-decoration: underline; }
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds       objective eval_metric</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8799577         1              0.8                1           0.1         5      39 binary:logistic     logloss</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8635643         1              0.8                1           0.1         5      39 binary:logistic     logloss</span></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.9027699         1              0.8                1           0.1         5      39 binary:logistic     logloss</span></span></code></pre></div>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds       objective eval_metric</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;   &lt;int&gt;          &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.8947647         1              0.8                1           0.1         5      44 binary:logistic     logloss</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.8720254         1              0.8                1           0.1         5      44 binary:logistic     logloss</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9010741         1              0.8                1           0.1         5      44 binary:logistic     logloss</span></span></code></pre></div>
 </div>
 <h2 id="nested-cross-validation">Nested Cross Validation</h2>
 <h3 id="inner-grid-search">Inner Grid Search</h3>
@@ -486,35 +483,36 @@ text-decoration: underline; }
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
 <span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
 <span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)</span></span>
 <span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
 <span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
 <span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
 <span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)</span></span>
 <span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
 <span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
 <span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
 <span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
 <span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
 <span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)</span></span>
 <span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth       objective eval_metric</span></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8675304      40       0.6                1                1           0.2         1 binary:logistic     logloss</span></span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8635643      44       1.0                1                5           0.1         5 binary:logistic     logloss</span></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8793103      24       0.6                1                1           0.2         1 binary:logistic     logloss</span></span></code></pre></div>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth       objective eval_metric</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;          &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.8714966      40       0.6              1.0                1           0.2         1 binary:logistic     logloss</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.8754627      35       1.0              1.0                5           0.1         5 binary:logistic     logloss</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.8883550      41       0.8              0.8                5           0.1         1 binary:logistic     logloss</span></span></code></pre></div>
 </div>
 <h3 id="inner-bayesian-optimization">Inner Bayesian Optimization</h3>
 <div class="cell">
@@ -548,26 +546,27 @@ text-decoration: underline; }
 <span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
 <span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
 <span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
 <span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds       objective eval_metric</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8662084       0.6              1.0                1           0.2         1      28 binary:logistic     logloss</span></span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8746695       1.0              0.8                5           0.1         5      44 binary:logistic     logloss</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8903335       0.6              1.0                1           0.1         5      30 binary:logistic     logloss</span></span></code></pre></div>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds       objective eval_metric</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;   &lt;int&gt;          &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.8714966       0.6        1.0000000                1     0.2000000         1      40 binary:logistic     logloss</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.8754627       1.0        1.0000000                5     0.1000000         5      35 binary:logistic     logloss</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.8810062       1.0        0.6293304                1     0.1034034         1      56 binary:logistic     logloss</span></span></code></pre></div>
 </div>
 <h2 id="holdout-test-dataset-performance">Holdout Test Dataset Performance</h2>
 <h3 id="predict-outcome-in-holdout-test-dataset">Predict Outcome in Holdout Test Dataset</h3>
@@ -586,16 +585,16 @@ text-decoration: underline; }
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;binary&quot;</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>perf_xgboost</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC     Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR       FPR       FNR       PPV</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.7922752 0.7922752 0.1726355   0.2198065 0.6931191    20    69    10    19 0.5128205 0.8734177 0.1265823 0.4871795 0.6666667</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.7687439 0.7687439 0.1885316   0.1479670 0.6353457    15    70     9    24 0.3846154 0.8860759 0.1139241 0.6153846 0.6250000</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.7594937 0.7594937 0.1854326   0.1619724 0.6676404    19    67    12    20 0.4871795 0.8481013 0.1518987 0.5128205 0.6129032</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV       FDR       MCC        F1     GMEAN       GPR       ACC      MMCE       BER</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.7840909 0.3333333 0.4172527 0.5797101 0.6692582 0.5847053 0.7542373 0.2457627 0.3068809</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.7446809 0.3750000 0.3163375 0.4761905 0.5837794 0.4902903 0.7203390 0.2796610 0.3646543</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.7701149 0.3870968 0.3583554 0.5428571 0.6427889 0.5464374 0.7288136 0.2711864 0.3323596</span></span></code></pre></div>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC     Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR       FPR       FNR</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.7913015 0.7913015 0.1743251   0.2121706 0.6994482    20    70     9    19 0.5128205 0.8860759 0.1139241 0.4871795</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.7745862 0.7745862 0.1856610   0.1609401 0.6481662    16    70     9    23 0.4102564 0.8860759 0.1139241 0.5897436</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.7917884 0.7917884 0.1739823   0.2137198 0.6609867    17    70     9    22 0.4358974 0.8860759 0.1139241 0.5641026</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          PPV       NPV       FDR       MCC        F1     GMEAN       GPR       ACC      MMCE       BER</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.6896552 0.7865169 0.3103448 0.4358249 0.5882353 0.6740904 0.5947010 0.7627119 0.2372881 0.3005518</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.6400000 0.7526882 0.3600000 0.3411249 0.5000000 0.6029248 0.5124101 0.7288136 0.2711864 0.3518338</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.6538462 0.7608696 0.3461538 0.3654140 0.5230769 0.6214807 0.5338631 0.7372881 0.2627119 0.3390133</span></span></code></pre></div>
 </div>
 
 

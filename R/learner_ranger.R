@@ -19,75 +19,81 @@
 #'
 #' @examples
 #' # binary classification
+#' if (requireNamespace("ranger", quietly = TRUE) &&
+#' requireNamespace("mlbench", quietly = TRUE) &&
+#' requireNamespace("measures", quietly = TRUE)) {
 #'
-#' library(mlbench)
-#' data("PimaIndiansDiabetes2")
-#' dataset <- PimaIndiansDiabetes2 |>
-#'   data.table::as.data.table() |>
-#'   na.omit()
+#'   library(mlbench)
+#'   data("PimaIndiansDiabetes2")
+#'   dataset <- PimaIndiansDiabetes2 |>
+#'     data.table::as.data.table() |>
+#'     na.omit()
 #'
-#' seed <- 123
-#' feature_cols <- colnames(dataset)[1:8]
+#'   seed <- 123
+#'   feature_cols <- colnames(dataset)[1:8]
 #'
-#' param_list_ranger <- expand.grid(
-#'   num.trees = seq(500, 1000, 500),
-#'   mtry = seq(2, 6, 2),
-#'   min.node.size = seq(1, 9, 4),
-#'   max.depth = seq(1, 9, 4),
-#'   sample.fraction = seq(0.5, 0.8, 0.3)
-#' )
+#'   param_list_ranger <- expand.grid(
+#'     num.trees = seq(500, 1000, 500),
+#'     mtry = seq(2, 6, 2),
+#'     min.node.size = seq(1, 9, 4),
+#'     max.depth = seq(1, 9, 4),
+#'     sample.fraction = seq(0.5, 0.8, 0.3)
+#'   )
 #'
-#' train_x <- model.matrix(
-#'   ~ -1 + .,
-#'   dataset[, .SD, .SDcols = feature_cols]
-#' )
-#' train_y <- as.integer(dataset[, get("diabetes")]) - 1L
+#'   train_x <- model.matrix(
+#'     ~ -1 + .,
+#'     dataset[, .SD, .SDcols = feature_cols]
+#'   )
+#'   train_y <- as.integer(dataset[, get("diabetes")]) - 1L
 #'
-#' fold_list <- splitTools::create_folds(
-#'   y = train_y,
-#'   k = 3,
-#'   type = "stratified",
-#'   seed = seed
-#' )
-#' ranger_cv <- mlexperiments::MLCrossValidation$new(
-#'   learner = mllrnrs::LearnerRanger$new(),
-#'   fold_list = fold_list,
-#'   ncores = 2,
-#'   seed = 123
-#' )
-#' ranger_cv$learner_args <- c(
-#'   as.list(
-#'     data.table::data.table(
-#'       param_list_ranger[37, ],
-#'       stringsAsFactors = FALSE
+#'   fold_list <- splitTools::create_folds(
+#'     y = train_y,
+#'     k = 3,
+#'     type = "stratified",
+#'     seed = seed
+#'   )
+#'   ranger_cv <- mlexperiments::MLCrossValidation$new(
+#'     learner = mllrnrs::LearnerRanger$new(),
+#'     fold_list = fold_list,
+#'     ncores = 2,
+#'     seed = 123
+#'   )
+#'   ranger_cv$learner_args <- c(
+#'     as.list(
+#'       data.table::data.table(
+#'         param_list_ranger[37, ],
+#'         stringsAsFactors = FALSE
+#'       ),
 #'     ),
-#'   ),
-#'   list(classification = TRUE)
-#' )
-#' ranger_cv$performance_metric_args <- list(positive = "1", negative = "0")
-#' ranger_cv$performance_metric <- mlexperiments::metric("AUC")
+#'     list(classification = TRUE)
+#'   )
+#'   ranger_cv$performance_metric_args <- list(positive = "1", negative = "0")
+#'   ranger_cv$performance_metric <- mlexperiments::metric("AUC")
 #'
-#' # set data
-#' ranger_cv$set_data(
-#'   x = train_x,
-#'   y = train_y
-#' )
+#'   # set data
+#'   ranger_cv$set_data(
+#'     x = train_x,
+#'     y = train_y
+#'   )
 #'
-#' ranger_cv$execute()
+#'   ranger_cv$execute()
+#' }
 #'
 #' @export
-LearnerRanger <- R6::R6Class( # nolint
+LearnerRanger <- R6::R6Class(
+  # nolint
   classname = "LearnerRanger",
   inherit = mlexperiments::MLLearnerBase,
   public = list(
-
     #' @description
     #' Create a new `LearnerRanger` object.
     #'
     #' @return A new `LearnerRanger` R6 object.
     #'
     #' @examples
-    #' LearnerRanger$new()
+    #' if (requireNamespace("ranger", quietly = TRUE)) {
+    #'   LearnerRanger$new()
+    #' }
     #'
     initialize = function() {
       if (!requireNamespace("ranger", quietly = TRUE)) {
@@ -113,26 +119,30 @@ LearnerRanger <- R6::R6Class( # nolint
 
 
 ranger_ce <- function() {
-  c("ranger_optimization", "ranger_fit", "metric",
-    "ranger_predict", "ranger_predict_base", "ranger_cv")
+  c(
+    "ranger_optimization",
+    "ranger_fit",
+    "metric",
+    "ranger_predict",
+    "ranger_predict_base",
+    "ranger_cv"
+  )
 }
 
-ranger_bsF <- function(...) { # nolint
-
+ranger_bsF <- function(...) {
   params <- list(...)
-
   params <- kdry::list.append(
     main_list = params,
     append_list = method_helper$execute_params["cat_vars"]
   )
 
-  set.seed(seed)#, kind = "L'Ecuyer-CMRG")
+  set.seed(seed) #, kind = "L'Ecuyer-CMRG")
   bayes_opt_ranger <- ranger_optimization(
     x = x,
     y = y,
     params = params,
     fold_list = method_helper$fold_list,
-    ncores = 1L, # important, as bayesian search is already parallelized
+    ncores = ncores,
     seed = seed
   )
 
@@ -146,12 +156,12 @@ ranger_bsF <- function(...) { # nolint
 
 # ranger-cv is not implemented yet
 ranger_cv <- function(
-    x,
-    y,
-    params,
-    fold_list,
-    ncores,
-    seed
+  x,
+  y,
+  params,
+  fold_list,
+  ncores,
+  seed
 ) {
   stopifnot(
     is.list(params)
@@ -166,7 +176,6 @@ ranger_cv <- function(
 
   # loop over the folds
   for (fold in names(fold_list)) {
-
     # get row-ids of the current fold
     ranger_train_idx <- fold_list[[fold]]
 
@@ -183,7 +192,8 @@ ranger_cv <- function(
 
     if ("case_weights" %in% names(args)) {
       args$case_weights <- kdry::mlh_subset(
-        args$case_weights, ranger_train_idx
+        args$case_weights,
+        ranger_train_idx
       )
     }
 
@@ -192,20 +202,18 @@ ranger_cv <- function(
     set.seed(seed)
     outlist[[fold]][["cvfit"]] <- do.call(ranger_fit, args)
     outlist[[fold]][["train_idx"]] <- ranger_train_idx
-
   }
   return(outlist)
 }
 
 ranger_optimization <- function(
-    x,
-    y,
-    params,
-    fold_list,
-    ncores,
-    seed
-  ) {
-
+  x,
+  y,
+  params,
+  fold_list,
+  ncores,
+  seed
+) {
   # initialize a dataframe to store the results
   results_df <- data.table::data.table(
     "fold" = character(0),
@@ -238,7 +246,6 @@ ranger_optimization <- function(
 
   # loop over the folds
   for (fold in names(cvfit_list)) {
-
     # get row-ids of the current fold
     cvfit <- cvfit_list[[fold]][["cvfit"]]
     ranger_train_idx <- cvfit_list[[fold]][["train_idx"]]
@@ -255,7 +262,8 @@ ranger_optimization <- function(
     # the classification error metric
     if (isTRUE(params$probability)) {
       pred_args <- kdry::list.append(
-        pred_args, list(reshape = TRUE)
+        pred_args,
+        list(reshape = TRUE)
       )
     }
 
@@ -271,7 +279,6 @@ ranger_optimization <- function(
       perf_args = perf_args
     )
 
-
     # save the results of this fold into a dataframe
     # from help("ranger::ranger"):
     # prediction.error - Overall out of bag prediction error. [...] for
@@ -282,7 +289,7 @@ ranger_optimization <- function(
         list(
           "fold" = fold,
           "oob_metric" = 1 - cvfit$prediction.error,
-          "validation_metric" = perf
+          "metric" = perf
         )
       ),
       fill = TRUE
@@ -290,7 +297,7 @@ ranger_optimization <- function(
   }
 
   res <- list(
-    "metric_optim_mean" = mean(results_df$validation_metric)
+    "metric_optim_mean" = mean(results_df$metric)
   )
 
   return(res)
@@ -310,8 +317,10 @@ ranger_fit <- function(x, y, ncores, seed, ...) {
   # "case.weights"
   if ("case_weights" %in% names(ranger_params)) {
     stopifnot(
-      "late fail: `case_weights` must be of same length as `y`" =
-        length(ranger_params$case_weights) == length(y)
+      "late fail: `case_weights` must be of same length as `y`" = length(
+        ranger_params$case_weights
+      ) ==
+        length(y)
     )
     names(ranger_params)[which(names(ranger_params) == "case_weights")] <-
       "case.weights"
@@ -334,7 +343,6 @@ ranger_fit <- function(x, y, ncores, seed, ...) {
 }
 
 ranger_predict_base <- function(model, newdata, ncores, ...) {
-
   kwargs <- list(...)
 
   var_handler <- mlexperiments::handle_cat_vars(kwargs)

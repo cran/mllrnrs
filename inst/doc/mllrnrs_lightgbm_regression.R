@@ -31,9 +31,9 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
     )
   )
 }
-options("mlexperiments.bayesian.max_init" = 10L)
-options("mlexperiments.optim.lgb.nrounds" = 100L)
-options("mlexperiments.optim.lgb.early_stopping_rounds" = 10L)
+options("mlexperiments.bayesian.max_init" = 4L)
+options("mlexperiments.optim.lgb.nrounds" = 20L)
+options("mlexperiments.optim.lgb.early_stopping_rounds" = 5L)
 
 
 ## -----------------------------------------------------------------------------
@@ -108,7 +108,7 @@ parameter_bounds <- list(
   num_leaves =  c(2L, 20L)
 )
 optim_args <- list(
-  iters.n = ncores,
+  n_iter = ncores,
   kappa = 3.5,
   acq = "ucb"
 )

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.12">
+<meta name="generator" content="quarto-1.9.16">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -246,9 +246,9 @@ text-decoration: underline; }
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.bayesian.max_init&quot;</span> <span class="ot">=</span> <span class="dv">10</span>L)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.nrounds&quot;</span> <span class="ot">=</span> <span class="dv">100</span>L)</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.early_stopping_rounds&quot;</span> <span class="ot">=</span> <span class="dv">10</span>L)</span></code></pre></div>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.bayesian.max_init&quot;</span> <span class="ot">=</span> <span class="dv">4</span>L)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.nrounds&quot;</span> <span class="ot">=</span> <span class="dv">20</span>L)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="st">&quot;mlexperiments.optim.xgb.early_stopping_rounds&quot;</span> <span class="ot">=</span> <span class="dv">5</span>L)</span></code></pre></div>
 </div>
 <h2 id="generate-training--and-test-data">Generate Training- and Test Data</h2>
 <div class="cell">
@@ -323,7 +323,7 @@ text-decoration: underline; }
 <span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_depth =</span>  <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">10</span>L)</span>
 <span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>optim_args <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">iters.n =</span> ncores,</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">n_iter =</span> ncores,</span>
 <span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">kappa =</span> <span class="fl">3.5</span>,</span>
 <span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">acq =</span> <span class="st">&quot;ucb&quot;</span></span>
 <span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
@@ -362,19 +362,21 @@ text-decoration: underline; }
 <span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
 <span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         1.0107788      27       0.6              0.8                5           0.2         1 multi:softprob</span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.9822161      35       1.0              0.8                5           0.1         5 multi:softprob</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         1.0097847     100       0.8              0.8                5           0.1         1 multi:softprob</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.9850296      20       0.6              0.8                5           0.2         5 multi:softprob</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.9807356      34       1.0              0.8                1           0.1         5 multi:softprob</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.9734746      46       0.8              0.8                5           0.1         5 multi:softprob</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    eval_metric num_class</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    mlogloss         3</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:    mlogloss         3</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:    mlogloss         3</span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:    mlogloss         3</span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:    mlogloss         3</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:    mlogloss         3</span></span></code></pre></div>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;             &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;         &lt;char&gt;</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         1.0106675      38       0.6              0.8                5           0.2         1 multi:softprob</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.9828797      37       1.0              0.8                5           0.1         5 multi:softprob</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         1.0102800      76       0.8              0.8                5           0.1         1 multi:softprob</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.9867769      20       0.6              0.8                5           0.2         5 multi:softprob</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.9815158      32       1.0              0.8                1           0.1         5 multi:softprob</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.9741743      50       0.8              0.8                5           0.1         5 multi:softprob</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    eval_metric num_class</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;char&gt;     &lt;num&gt;</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    mlogloss         3</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:    mlogloss         3</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:    mlogloss         3</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:    mlogloss         3</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:    mlogloss         3</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:    mlogloss         3</span></span></code></pre></div>
 </div>
 <h3 id="bayesian-optimization">Bayesian Optimization</h3>
 <div class="cell">
@@ -406,19 +408,21 @@ text-decoration: underline; }
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
 <span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    Epoch setting_id subsample colsample_bytree min_child_weight learning_rate max_depth gpUtility acqOptimum inBounds Elapsed</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1       0.6              0.8                5           0.2         1        NA      FALSE     TRUE   1.934</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2       1.0              0.8                5           0.1         5        NA      FALSE     TRUE   2.181</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3       0.8              0.8                5           0.1         1        NA      FALSE     TRUE   2.060</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4       0.6              0.8                5           0.2         5        NA      FALSE     TRUE   2.057</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5       1.0              0.8                1           0.1         5        NA      FALSE     TRUE   1.422</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6       0.8              0.8                5           0.1         5        NA      FALSE     TRUE   1.505</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         Score metric_optim_mean nrounds errorMessage      objective eval_metric num_class</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: -1.0093139         1.0093139      51           NA multi:softprob    mlogloss         3</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: -0.9842567         0.9842567      34           NA multi:softprob    mlogloss         3</span></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: -1.0097517         1.0097517      79           NA multi:softprob    mlogloss         3</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: -0.9766614         0.9766614      17           NA multi:softprob    mlogloss         3</span></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: -0.9851912         0.9851912      28           NA multi:softprob    mlogloss         3</span></span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: -0.9755198         0.9755198      42           NA multi:softprob    mlogloss         3</span></span></code></pre></div>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;num&gt;      &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;lgcl&gt;   &lt;lgcl&gt;   &lt;num&gt;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1       0.6              0.8                5           0.2         1        NA      FALSE     TRUE   0.995</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2       1.0              0.8                5           0.1         5        NA      FALSE     TRUE   1.057</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3       0.8              0.8                5           0.1         1        NA      FALSE     TRUE   1.088</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4       0.6              0.8                5           0.2         5        NA      FALSE     TRUE   1.035</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5       1.0              0.8                1           0.1         5        NA      FALSE     TRUE   0.282</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6       0.8              0.8                5           0.1         5        NA      FALSE     TRUE   0.314</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         Score metric_optim_mean nrounds errorMessage      objective eval_metric num_class</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;num&gt;             &lt;num&gt;   &lt;int&gt;       &lt;lgcl&gt;         &lt;char&gt;      &lt;char&gt;     &lt;num&gt;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: -1.0106675         1.0106675      38           NA multi:softprob    mlogloss         3</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: -0.9828797         0.9828797      37           NA multi:softprob    mlogloss         3</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: -1.0102800         1.0102800      76           NA multi:softprob    mlogloss         3</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: -0.9867769         0.9867769      20           NA multi:softprob    mlogloss         3</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: -0.9815158         0.9815158      32           NA multi:softprob    mlogloss         3</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: -0.9741743         0.9741743      50           NA multi:softprob    mlogloss         3</span></span></code></pre></div>
 </div>
 <h2 id="k-fold-cross-validation">k-Fold Cross Validation</h2>
 <div class="cell">
@@ -454,14 +458,16 @@ text-decoration: underline; }
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds      objective eval_metric</span></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.5645161 0.5356077        0.8312972                1     0.1099728        10      23 multi:softprob    mlogloss</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.5195682 0.5356077        0.8312972                1     0.1099728        10      23 multi:softprob    mlogloss</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.5618280 0.5356077        0.8312972                1     0.1099728        10      23 multi:softprob    mlogloss</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds      objective eval_metric</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;   &lt;int&gt;         &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5685484 0.7220588        0.8330246                1     0.1099728        10      19 multi:softprob    mlogloss</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5587045 0.7220588        0.8330246                1     0.1099728        10      19 multi:softprob    mlogloss</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5483871 0.7220588        0.8330246                1     0.1099728        10      19 multi:softprob    mlogloss</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
 </div>
 <h2 id="nested-cross-validation">Nested Cross Validation</h2>
 <h3 id="inner-grid-search">Inner Grid Search</h3>
@@ -527,14 +533,16 @@ text-decoration: underline; }
 <span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)</span></span>
 <span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective eval_metric</span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.5658602      30       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.5276653      33       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.5470430      25       0.6              1.0                1           0.1         5 multi:softprob    mlogloss</span></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective eval_metric</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;         &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5591398      32       0.6              1.0                1           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5344130      34       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5510753      24       0.6              1.0                1           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;</span></span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
 </div>
 <h3 id="inner-bayesian-optimization">Inner Bayesian Optimization</h3>
 <div class="cell">
@@ -584,14 +592,16 @@ text-decoration: underline; }
 <span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
 <span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds      objective eval_metric</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.5524194 0.7285277        0.8178568                1     0.1099728        10      18 multi:softprob    mlogloss</span></span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.5330634 0.5578915        0.7352097                1     0.1099728        10      24 multi:softprob    mlogloss</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.5456989 0.5001911        0.8708509                1     0.1099728        10      19 multi:softprob    mlogloss</span></span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
-<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
-<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance subsample colsample_bytree min_child_weight learning_rate max_depth nrounds      objective eval_metric</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;   &lt;int&gt;         &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5591398 0.6000000        1.0000000                1     0.1000000         5      32 multi:softprob    mlogloss</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5641026 0.6936177        0.7695365                1     0.1099728        10      20 multi:softprob    mlogloss</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5537634 0.5955781        0.8688622                1     0.1099728        10      19 multi:softprob    mlogloss</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
 </div>
 <h2 id="holdout-test-dataset-performance">Holdout Test Dataset Performance</h2>
 <h3 id="predict-outcome-in-holdout-test-dataset">Predict Outcome in Holdout Test Dataset</h3>
@@ -609,10 +619,11 @@ text-decoration: underline; }
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y_ground_truth =</span> test_y</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>perf_xgboost</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    model performance</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.5621735</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.5475444</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.5464995</span></span></code></pre></div>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5590387</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5579937</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5611285</span></span></code></pre></div>
 </div>
 <h2 id="appendix-i-grid-search-with-target-weigths">Appendix I: Grid-Search with Target Weigths</h2>
 <p>Here, <code>xgboost</code>’s <a href="https://rdrr.io/cran/xgboost/man/xgb.DMatrix.html"><code>weight</code>-argument</a> is used to rescale the case-weights during the training.</p>
@@ -658,12 +669,12 @@ text-decoration: underline; }
 <span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
 <span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective</span></span>
 <span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;             &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;         &lt;char&gt;</span></span>
-<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.9447465      27       0.6              0.8                5           0.2         1 multi:softprob</span></span>
-<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.9222842      33       1.0              0.8                5           0.1         5 multi:softprob</span></span>
-<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.9442046     100       0.8              0.8                5           0.1         1 multi:softprob</span></span>
-<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.9236826      20       0.6              0.8                5           0.2         5 multi:softprob</span></span>
-<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.9197338      35       1.0              0.8                1           0.1         5 multi:softprob</span></span>
-<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.9147754      46       0.8              0.8                5           0.1         5 multi:softprob</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.9442324      50       0.6              0.8                5           0.2         1 multi:softprob</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.9217258      35       1.0              0.8                5           0.1         5 multi:softprob</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.9443002      93       0.8              0.8                5           0.1         1 multi:softprob</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.9245540      20       0.6              0.8                5           0.2         5 multi:softprob</span></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.9212009      26       1.0              0.8                1           0.1         5 multi:softprob</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.9145242      39       0.8              0.8                5           0.1         5 multi:softprob</span></span>
 <span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    eval_metric num_class</span></span>
 <span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;char&gt;     &lt;num&gt;</span></span>
 <span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    mlogloss         3</span></span>
@@ -710,11 +721,16 @@ text-decoration: underline; }
 <span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective eval_metric num_class</span></span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;         &lt;char&gt;      &lt;char&gt;     &lt;num&gt;</span></span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5631720      46       0.8              0.8                5           0.1         5 multi:softprob    mlogloss         3</span></span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5222672      46       0.8              0.8                5           0.1         5 multi:softprob    mlogloss         3</span></span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5510753      46       0.8              0.8                5           0.1         5 multi:softprob    mlogloss         3</span></span></code></pre></div>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance nrounds subsample colsample_bytree min_child_weight learning_rate max_depth      objective eval_metric</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;   &lt;int&gt;     &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;     &lt;num&gt;         &lt;char&gt;      &lt;char&gt;</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.5658602      39       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.5222672      39       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.5577957      39       0.8              0.8                5           0.1         5 multi:softprob    mlogloss</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    num_class</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         3</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         3</span></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         3</span></span></code></pre></div>
 </div>
 
 

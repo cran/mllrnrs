@@ -31,7 +31,7 @@ if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
     )
   )
 }
-options("mlexperiments.bayesian.max_init" = 10L)
+options("mlexperiments.bayesian.max_init" = 4L)
 
 
 ## -----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ parameter_bounds <- list(
   alpha = c(0., 1.)
 )
 optim_args <- list(
-  iters.n = ncores,
+  n_iter = ncores,
   kappa = 3.5,
   acq = "ucb"
 )
