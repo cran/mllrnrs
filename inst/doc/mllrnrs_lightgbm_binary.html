@@ -2,13 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.16">
+<meta name="generator" content="quarto-1.10.8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>lightgbm: Binary Classification</title>
 <style>
+
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -221,13 +222,12 @@ text-decoration: underline; }
 <h2 id="import-and-prepare-data">Import and Prepare Data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlbench)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;PimaIndiansDiabetes2&quot;</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> PimaIndiansDiabetes2 <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;BreastCancer&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> BreastCancer <span class="sc">|&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  data.table<span class="sc">::</span><span class="fu">as.data.table</span>() <span class="sc">|&gt;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>()</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>feature_cols <span class="ot">&lt;-</span> <span class="fu">colnames</span>(dataset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>target_col <span class="ot">&lt;-</span> <span class="st">&quot;diabetes&quot;</span></span></code></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>feature_cols <span class="ot">&lt;-</span> <span class="fu">colnames</span>(dataset)[<span class="dv">2</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>target_col <span class="ot">&lt;-</span> <span class="st">&quot;Class&quot;</span></span></code></pre></div>
 </div>
 <h2 id="general-configurations">General Configurations</h2>
 <div class="cell">
@@ -351,99 +351,29 @@ text-decoration: underline; }
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>tuner_results_grid <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================&gt;----------------------------------------------------------] 4/10 ( 40%)</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.329670 -&gt; initscore=-0.709676</span></span>
-<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.709676</span></span>
-<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336957 -&gt; initscore=-0.676887</span></span>
-<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.676887</span></span>
-<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
-<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth</span></span>
-<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.4270896      15              0.6              0.6                4           0.2         18        -1</span></span>
-<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.3978536      14              0.8              1.0               10           0.2          6        -1</span></span>
-<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.4011304      95              0.8              0.8                4           0.1          2        -1</span></span>
-<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.4021737      30              1.0              0.8                4           0.1         10        -1</span></span>
-<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.4034704      14              1.0              0.6                6           0.2         18        -1</span></span>
-<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.3955430      28              1.0              1.0                8           0.1         14        -1</span></span>
-<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    verbose objective         metric</span></span>
-<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:      -1    binary binary_logloss</span></span>
-<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:      -1    binary binary_logloss</span></span>
-<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:      -1    binary binary_logloss</span></span>
-<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:      -1    binary binary_logloss</span></span>
-<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:      -1    binary binary_logloss</span></span>
-<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:      -1    binary binary_logloss</span></span></code></pre></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose objective</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;             &lt;num&gt;   &lt;int&gt;            &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;      &lt;num&gt;     &lt;int&gt;   &lt;int&gt;    &lt;char&gt;</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.1413020      18              0.6              0.6                4           0.2         18        -1      -1    binary</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.1336577      18              0.8              1.0               10           0.2          6        -1      -1    binary</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.1959308      20              0.8              0.8                4           0.1          2        -1      -1    binary</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.1665362      20              1.0              0.8                4           0.1         10        -1      -1    binary</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.1325429      20              1.0              0.6                6           0.2         18        -1      -1    binary</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.1651197      20              1.0              1.0                8           0.1         14        -1      -1    binary</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            metric</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            &lt;char&gt;</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: binary_logloss</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: binary_logloss</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: binary_logloss</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: binary_logloss</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: binary_logloss</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: binary_logloss</span></span></code></pre></div>
 </div>
 <h3 id="bayesian-optimization">Bayesian Optimization</h3>
 <div class="cell">
@@ -470,24 +400,38 @@ text-decoration: underline; }
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>tuner_results_bayesian <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    Epoch setting_id bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves gpUtility acqOptimum inBounds</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1              0.6              0.6                4           0.2         18        NA      FALSE     TRUE</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2              0.8              1.0               10           0.2          6        NA      FALSE     TRUE</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3              0.8              0.8                4           0.1          2        NA      FALSE     TRUE</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4              1.0              0.8                4           0.1         10        NA      FALSE     TRUE</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5              1.0              0.6                6           0.2         18        NA      FALSE     TRUE</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6              1.0              1.0                8           0.1         14        NA      FALSE     TRUE</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    Elapsed      Score metric_optim_mean nrounds errorMessage max_depth verbose objective         metric</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:   0.972 -0.4270896         0.4270896      15           NA        -1      -1    binary binary_logloss</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:   0.951 -0.3978536         0.3978536      14           NA        -1      -1    binary binary_logloss</span></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:   0.974 -0.4011304         0.4011304      95           NA        -1      -1    binary binary_logloss</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:   0.971 -0.4021737         0.4021737      30           NA        -1      -1    binary binary_logloss</span></span>
-<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:   0.039 -0.4034704         0.4034704      14           NA        -1      -1    binary binary_logloss</span></span>
-<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:   0.045 -0.3955430         0.3955430      28           NA        -1      -1    binary binary_logloss</span></span></code></pre></div>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.032  Round = 1   bagging_fraction = 0.8000   feature_fraction = 0.8000   min_data_in_leaf = 4.0000   learning_rate = 0.1000  num_leaves = 2.0000 Value = -0.1959308</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.04   Round = 2   bagging_fraction = 0.6000   feature_fraction = 0.6000   min_data_in_leaf = 6.0000   learning_rate = 0.2000  num_leaves = 10.0000    Value = -0.1288185</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.034  Round = 3   bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1336577</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.038  Round = 4   bagging_fraction = 0.8000   feature_fraction = 0.6000   min_data_in_leaf = 8.0000   learning_rate = 0.1000  num_leaves = 14.0000    Value = -0.1622234</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.048  Round = 5   bagging_fraction = 0.8514907    feature_fraction = 0.5359993    min_data_in_leaf = 9.0000   learning_rate = 0.1801683   num_leaves = 20.0000    Value = -0.1392806</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.043  Round = 6   bagging_fraction = 0.2079895    feature_fraction = 0.385567 min_data_in_leaf = 3.0000   learning_rate = 0.1618143   num_leaves = 11.0000    Value = -0.137801</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.036  Round = 7   bagging_fraction = 0.8973112    feature_fraction = 0.2399434    min_data_in_leaf = 12.0000  learning_rate = 0.2000  num_leaves = 15.0000    Value = -0.1243682</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.044  Round = 8   bagging_fraction = 0.4285091    feature_fraction = 0.2176898    min_data_in_leaf = 12.0000  learning_rate = 0.1330769   num_leaves = 20.0000    Value = -0.1403338</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 7    bagging_fraction = 0.8973112    feature_fraction = 0.2399434    min_data_in_leaf = 12.0000  learning_rate = 0.2000  num_leaves = 15.0000    Value = -0.1243682</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves      Value max_depth verbose objective         metric</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;            &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;int&gt;   &lt;int&gt;    &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1        0.8000000        0.8000000                4     0.1000000          2 -0.1959308        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2        0.6000000        0.6000000                6     0.2000000         10 -0.1288185        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3        0.8000000        1.0000000               10     0.2000000          6 -0.1336577        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4        0.8000000        0.6000000                8     0.1000000         14 -0.1622234        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5        0.8514907        0.5359993                9     0.1801683         20 -0.1392806        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6        0.2079895        0.3855670                3     0.1618143         11 -0.1378010        -1      -1    binary binary_logloss</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    metric_optim_mean</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                &lt;num&gt;</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         0.1959308</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         0.1288185</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         0.1336577</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:         0.1622234</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:         0.1392806</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:         0.1378010</span></span></code></pre></div>
 </div>
 <h2 id="k-fold-cross-validation">k-Fold Cross Validation</h2>
 <div class="cell">
@@ -513,22 +457,19 @@ text-decoration: underline; }
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
 <span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves nrounds max_depth verbose</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8683236        0.4344866                1                2           0.1          5      38        -1      -1</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8841883        0.4344866                1                2           0.1          5      38        -1      -1</span></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8846806        0.4344866                1                2           0.1          5      38        -1      -1</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    objective         metric</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    binary binary_logloss</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:    binary binary_logloss</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:    binary binary_logloss</span></span></code></pre></div>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose objective         metric nrounds</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;      &lt;num&gt;     &lt;int&gt;   &lt;int&gt;    &lt;char&gt;         &lt;char&gt;   &lt;int&gt;</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9890556        0.2399434               12           0.2         15        -1      -1    binary binary_logloss      20</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9932386        0.2399434               12           0.2         15        -1      -1    binary binary_logloss      20</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9876374        0.2399434               12           0.2         15        -1      -1    binary binary_logloss      20</span></span></code></pre></div>
 </div>
 <h2 id="nested-cross-validation">Nested Cross Validation</h2>
 <h3 id="inner-grid-search">Inner Grid Search</h3>
@@ -559,258 +500,41 @@ text-decoration: underline; }
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-121"><a href="#cb10-121" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-122"><a href="#cb10-122" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-123"><a href="#cb10-123" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-124"><a href="#cb10-124" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-125"><a href="#cb10-125" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-126"><a href="#cb10-126" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-127"><a href="#cb10-127" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-128"><a href="#cb10-128" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-129"><a href="#cb10-129" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-130"><a href="#cb10-130" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-131"><a href="#cb10-131" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-132"><a href="#cb10-132" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-133"><a href="#cb10-133" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-134"><a href="#cb10-134" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-135"><a href="#cb10-135" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-136"><a href="#cb10-136" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-137"><a href="#cb10-137" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-138"><a href="#cb10-138" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-139"><a href="#cb10-139" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-140"><a href="#cb10-140" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-141"><a href="#cb10-141" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-142"><a href="#cb10-142" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-143"><a href="#cb10-143" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-144"><a href="#cb10-144" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-145"><a href="#cb10-145" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-146"><a href="#cb10-146" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-147"><a href="#cb10-147" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-148"><a href="#cb10-148" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-149"><a href="#cb10-149" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-150"><a href="#cb10-150" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-151"><a href="#cb10-151" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-152"><a href="#cb10-152" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-153"><a href="#cb10-153" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-154"><a href="#cb10-154" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-155"><a href="#cb10-155" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-156"><a href="#cb10-156" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-157"><a href="#cb10-157" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-158"><a href="#cb10-158" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-159"><a href="#cb10-159" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-160"><a href="#cb10-160" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-161"><a href="#cb10-161" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-162"><a href="#cb10-162" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-163"><a href="#cb10-163" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-164"><a href="#cb10-164" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-165"><a href="#cb10-165" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-166"><a href="#cb10-166" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-167"><a href="#cb10-167" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-168"><a href="#cb10-168" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-169"><a href="#cb10-169" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-170"><a href="#cb10-170" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-171"><a href="#cb10-171" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-172"><a href="#cb10-172" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-173"><a href="#cb10-173" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-174"><a href="#cb10-174" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-175"><a href="#cb10-175" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-176"><a href="#cb10-176" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-177"><a href="#cb10-177" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-178"><a href="#cb10-178" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-179"><a href="#cb10-179" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-180"><a href="#cb10-180" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-181"><a href="#cb10-181" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-182"><a href="#cb10-182" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.327869 -&gt; initscore=-0.717840</span></span>
-<span id="cb10-183"><a href="#cb10-183" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.717840</span></span>
-<span id="cb10-184"><a href="#cb10-184" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-185"><a href="#cb10-185" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-186"><a href="#cb10-186" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.330579 -&gt; initscore=-0.705570</span></span>
-<span id="cb10-187"><a href="#cb10-187" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.705570</span></span>
-<span id="cb10-188"><a href="#cb10-188" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-189"><a href="#cb10-189" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
-<span id="cb10-190"><a href="#cb10-190" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb10-191"><a href="#cb10-191" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
-<span id="cb10-192"><a href="#cb10-192" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-193"><a href="#cb10-193" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-194"><a href="#cb10-194" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-195"><a href="#cb10-195" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-196"><a href="#cb10-196" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-197"><a href="#cb10-197" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-198"><a href="#cb10-198" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-199"><a href="#cb10-199" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-200"><a href="#cb10-200" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-201"><a href="#cb10-201" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-202"><a href="#cb10-202" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-203"><a href="#cb10-203" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-204"><a href="#cb10-204" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-205"><a href="#cb10-205" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-206"><a href="#cb10-206" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-207"><a href="#cb10-207" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-208"><a href="#cb10-208" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-209"><a href="#cb10-209" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-210"><a href="#cb10-210" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-211"><a href="#cb10-211" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-212"><a href="#cb10-212" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-213"><a href="#cb10-213" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-214"><a href="#cb10-214" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-215"><a href="#cb10-215" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-216"><a href="#cb10-216" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-217"><a href="#cb10-217" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-218"><a href="#cb10-218" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-219"><a href="#cb10-219" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-220"><a href="#cb10-220" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-221"><a href="#cb10-221" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-222"><a href="#cb10-222" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-223"><a href="#cb10-223" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-224"><a href="#cb10-224" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-225"><a href="#cb10-225" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-226"><a href="#cb10-226" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-227"><a href="#cb10-227" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-228"><a href="#cb10-228" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-229"><a href="#cb10-229" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-230"><a href="#cb10-230" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-231"><a href="#cb10-231" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-232"><a href="#cb10-232" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-233"><a href="#cb10-233" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-234"><a href="#cb10-234" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-235"><a href="#cb10-235" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-236"><a href="#cb10-236" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-237"><a href="#cb10-237" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-238"><a href="#cb10-238" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-239"><a href="#cb10-239" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-240"><a href="#cb10-240" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-241"><a href="#cb10-241" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-242"><a href="#cb10-242" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-243"><a href="#cb10-243" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb10-244"><a href="#cb10-244" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-245"><a href="#cb10-245" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-246"><a href="#cb10-246" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-247"><a href="#cb10-247" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-248"><a href="#cb10-248" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-249"><a href="#cb10-249" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-250"><a href="#cb10-250" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-251"><a href="#cb10-251" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-252"><a href="#cb10-252" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Warning] No further splits with positive gain, best gain: -inf</span></span>
-<span id="cb10-253"><a href="#cb10-253" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-254"><a href="#cb10-254" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-255"><a href="#cb10-255" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-256"><a href="#cb10-256" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-257"><a href="#cb10-257" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-258"><a href="#cb10-258" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-259"><a href="#cb10-259" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-260"><a href="#cb10-260" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-261"><a href="#cb10-261" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-262"><a href="#cb10-262" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-263"><a href="#cb10-263" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.333333 -&gt; initscore=-0.693147</span></span>
-<span id="cb10-264"><a href="#cb10-264" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.693147</span></span>
-<span id="cb10-265"><a href="#cb10-265" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.341463 -&gt; initscore=-0.656780</span></span>
-<span id="cb10-266"><a href="#cb10-266" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.656780</span></span>
-<span id="cb10-267"><a href="#cb10-267" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] [binary:BoostFromScore]: pavg=0.336066 -&gt; initscore=-0.680877</span></span>
-<span id="cb10-268"><a href="#cb10-268" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [LightGBM] [Info] Start training from score -0.680877</span></span>
-<span id="cb10-269"><a href="#cb10-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-270"><a href="#cb10-270" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb10-271"><a href="#cb10-271" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose</span></span>
-<span id="cb10-272"><a href="#cb10-272" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8572184      72              0.8              0.8                4           0.1          2        -1      -1</span></span>
-<span id="cb10-273"><a href="#cb10-273" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8625066      22              0.8              0.6                8           0.1         14        -1      -1</span></span>
-<span id="cb10-274"><a href="#cb10-274" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8725269      53              0.8              0.8                4           0.1          2        -1      -1</span></span>
-<span id="cb10-275"><a href="#cb10-275" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    objective         metric</span></span>
-<span id="cb10-276"><a href="#cb10-276" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    binary binary_logloss</span></span>
-<span id="cb10-277"><a href="#cb10-277" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:    binary binary_logloss</span></span>
-<span id="cb10-278"><a href="#cb10-278" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:    binary binary_logloss</span></span></code></pre></div>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [==============================================================================&gt;----------------------------------------] 2/3 ( 67%)</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [=======================================================================================================================] 3/3 (100%)</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance nrounds bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose objective</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;   &lt;int&gt;            &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;      &lt;num&gt;     &lt;int&gt;   &lt;int&gt;    &lt;char&gt;</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9902913      20              0.8              1.0               10           0.2          6        -1      -1    binary</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9883842      19              0.8              1.0               10           0.2          6        -1      -1    binary</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9862637      18              0.6              0.6                6           0.2         10        -1      -1    binary</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            metric</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;            &lt;char&gt;</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: binary_logloss</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: binary_logloss</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: binary_logloss</span></span></code></pre></div>
 </div>
 <h3 id="inner-bayesian-optimization">Inner Bayesian Optimization</h3>
 <div class="cell">
@@ -844,30 +568,68 @@ text-decoration: underline; }
 <span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves nrounds max_depth verbose</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8572184              0.8        0.8000000                4           0.1          2      72        -1      -1</span></span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8730830              1.0        0.6198464               10           0.1         20      23        -1      -1</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8725269              0.8        0.8000000                4           0.1          2      53        -1      -1</span></span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    objective         metric</span></span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:    binary binary_logloss</span></span>
-<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:    binary binary_logloss</span></span>
-<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:    binary binary_logloss</span></span></code></pre></div>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.027  Round = 1   bagging_fraction = 0.8000   feature_fraction = 0.8000   min_data_in_leaf = 4.0000   learning_rate = 0.1000  num_leaves = 2.0000 Value = -0.2081399</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.035  Round = 2   bagging_fraction = 0.6000   feature_fraction = 0.6000   min_data_in_leaf = 6.0000   learning_rate = 0.2000  num_leaves = 10.0000    Value = -0.1575606</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.03   Round = 3   bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1462635</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.036  Round = 4   bagging_fraction = 0.8000   feature_fraction = 0.6000   min_data_in_leaf = 8.0000   learning_rate = 0.1000  num_leaves = 14.0000    Value = -0.1733679</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.029  Round = 5   bagging_fraction = 0.5596134    feature_fraction = 0.9300915    min_data_in_leaf = 7.0000   learning_rate = 0.1800818   num_leaves = 2.0000 Value = -0.1645675</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.032  Round = 6   bagging_fraction = 0.8950514    feature_fraction = 0.2196616    min_data_in_leaf = 12.0000  learning_rate = 0.1620435   num_leaves = 20.0000    Value = -0.149935</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.025  Round = 7   bagging_fraction = 0.2000   feature_fraction = 0.991415 min_data_in_leaf = 12.0000  learning_rate = 0.1000  num_leaves = 2.0000 Value = -0.210863</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.043  Round = 8   bagging_fraction = 0.2000   feature_fraction = 0.8495294    min_data_in_leaf = 2.0000   learning_rate = 0.1000  num_leaves = 20.0000    Value = -0.2048307</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 3    bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1462635</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [==============================================================================&gt;----------------------------------------] 2/3 ( 67%)</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.029  Round = 1   bagging_fraction = 0.8000   feature_fraction = 0.8000   min_data_in_leaf = 4.0000   learning_rate = 0.1000  num_leaves = 2.0000 Value = -0.1968844</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.04   Round = 2   bagging_fraction = 0.6000   feature_fraction = 0.6000   min_data_in_leaf = 6.0000   learning_rate = 0.2000  num_leaves = 10.0000    Value = -0.1448359</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.032  Round = 3   bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1431115</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.035  Round = 4   bagging_fraction = 0.8000   feature_fraction = 0.6000   min_data_in_leaf = 8.0000   learning_rate = 0.1000  num_leaves = 14.0000    Value = -0.1744139</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.037  Round = 5   bagging_fraction = 0.5157127    feature_fraction = 0.9291875    min_data_in_leaf = 9.0000   learning_rate = 0.1626326   num_leaves = 6.0000 Value = -0.1437751</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.042  Round = 6   bagging_fraction = 0.803404 feature_fraction = 0.8105688    min_data_in_leaf = 9.0000   learning_rate = 0.1840982   num_leaves = 6.0000 Value = -0.1449229</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.034  Round = 7   bagging_fraction = 0.3970573    feature_fraction = 0.271388 min_data_in_leaf = 9.0000   learning_rate = 0.16237 num_leaves = 10.0000    Value = -0.1432943</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.039  Round = 8   bagging_fraction = 0.3970573    feature_fraction = 0.2713869    min_data_in_leaf = 9.0000   learning_rate = 0.16237 num_leaves = 10.0000    Value = -0.1432943</span></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 3    bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1431115</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [=======================================================================================================================] 3/3 (100%)</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.026  Round = 1   bagging_fraction = 0.8000   feature_fraction = 0.8000   min_data_in_leaf = 4.0000   learning_rate = 0.1000  num_leaves = 2.0000 Value = -0.1935595</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.034  Round = 2   bagging_fraction = 0.6000   feature_fraction = 0.6000   min_data_in_leaf = 6.0000   learning_rate = 0.2000  num_leaves = 10.0000    Value = -0.1456779</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.03   Round = 3   bagging_fraction = 0.8000   feature_fraction = 1.0000   min_data_in_leaf = 10.0000  learning_rate = 0.2000  num_leaves = 6.0000 Value = -0.1592296</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.039  Round = 4   bagging_fraction = 0.8000   feature_fraction = 0.6000   min_data_in_leaf = 8.0000   learning_rate = 0.1000  num_leaves = 14.0000    Value = -0.1740933</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.029  Round = 5   bagging_fraction = 0.5157127    feature_fraction = 0.9291875    min_data_in_leaf = 9.0000   learning_rate = 0.1998166   num_leaves = 6.0000 Value = -0.1436106</span></span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.042  Round = 6   bagging_fraction = 0.2000   feature_fraction = 0.4928526    min_data_in_leaf = 6.0000   learning_rate = 0.1736983   num_leaves = 20.0000    Value = -0.1451436</span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.039  Round = 7   bagging_fraction = 0.8514907    feature_fraction = 0.5359993    min_data_in_leaf = 9.0000   learning_rate = 0.1068914   num_leaves = 20.0000    Value = -0.1693466</span></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.034  Round = 8   bagging_fraction = 0.2000   feature_fraction = 0.2000   min_data_in_leaf = 12.0000  learning_rate = 0.1000  num_leaves = 20.0000    Value = -0.1729361</span></span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 5    bagging_fraction = 0.5157127    feature_fraction = 0.9291875    min_data_in_leaf = 9.0000   learning_rate = 0.1998166   num_leaves = 6.0000 Value = -0.1436106</span></span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance bagging_fraction feature_fraction min_data_in_leaf learning_rate num_leaves max_depth verbose objective         metric</span></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;            &lt;num&gt;            &lt;num&gt;            &lt;num&gt;         &lt;num&gt;      &lt;num&gt;     &lt;int&gt;   &lt;int&gt;    &lt;char&gt;         &lt;char&gt;</span></span>
+<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9902913        0.8000000        1.0000000               10     0.2000000          6        -1      -1    binary binary_logloss</span></span>
+<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9883842        0.8000000        1.0000000               10     0.2000000          6        -1      -1    binary binary_logloss</span></span>
+<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9869505        0.5157127        0.9291875                9     0.1998166          6        -1      -1    binary binary_logloss</span></span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    nrounds</span></span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      &lt;int&gt;</span></span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:      20</span></span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:      19</span></span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:      19</span></span></code></pre></div>
 </div>
 <h2 id="holdout-test-dataset-performance">Holdout Test Dataset Performance</h2>
 <h3 id="predict-outcome-in-holdout-test-dataset">Predict Outcome in Holdout Test Dataset</h3>
@@ -886,16 +648,16 @@ text-decoration: underline; }
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;binary&quot;</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>perf_lightgbm</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC     Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR       FPR       FNR       PPV</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.8075300 0.8075300 0.1632361   0.2622850 0.6739695    19    68    11    20 0.4871795 0.8607595 0.1392405 0.5128205 0.6333333</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.7695553 0.7695553 0.1851544   0.1632297 0.6416748    15    71     8    24 0.3846154 0.8987342 0.1012658 0.6153846 0.6521739</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.7914638 0.7914638 0.1741526   0.2129501 0.6674781    18    69    10    21 0.4615385 0.8734177 0.1265823 0.5384615 0.6428571</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV       FDR       MCC        F1     GMEAN       GPR       ACC      MMCE       BER</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.7727273 0.3666667 0.3758781 0.5507246 0.6475680 0.5554701 0.7372881 0.2627119 0.3260305</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.7473684 0.3478261 0.3364672 0.4838710 0.5879345 0.5008354 0.7288136 0.2711864 0.3583252</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.7666667 0.3571429 0.3703681 0.5373134 0.6349141 0.5447048 0.7372881 0.2627119 0.3325219</span></span></code></pre></div>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC      Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR         FPR        FNR       PPV</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9764718 0.9764718 0.03740030   0.8354976 0.9407131    64   133     1     8 0.8888889 0.9925373 0.007462687 0.11111111 0.9846154</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9906198 0.9906198 0.04184296   0.8159569 0.9268242    62   133     1    10 0.8611111 0.9925373 0.007462687 0.13888889 0.9841270</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9811360 0.9811360 0.04052871   0.8217375 0.9401949    65   131     3     7 0.9027778 0.9776119 0.022388060 0.09722222 0.9558824</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV        FDR       MCC        F1     GMEAN       GPR       ACC       MMCE        BER</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.9432624 0.01538462 0.9043538 0.9343066 0.9392845 0.9355286 0.9563107 0.04368932 0.05928690</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.9300699 0.01587302 0.8834041 0.9185185 0.9244917 0.9205665 0.9466019 0.05339806 0.07317579</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.9492754 0.04411765 0.8926878 0.9285714 0.9394500 0.9289507 0.9514563 0.04854369 0.05980514</span></span></code></pre></div>
 </div>
 
 

@@ -1,11 +1,11 @@
 library(mlbench)
-data("PimaIndiansDiabetes2")
-dataset <- PimaIndiansDiabetes2 |>
+data("BreastCancer")
+dataset <- BreastCancer |>
   data.table::as.data.table() |>
   na.omit()
 
 seed <- 123
-feature_cols <- colnames(dataset)[1:8]
+feature_cols <- colnames(dataset)[2:10]
 
 param_list_glmnet <- expand.grid(
   alpha = seq(0, 1, 0.05)
@@ -14,6 +14,7 @@ param_list_glmnet <- expand.grid(
 if (isTRUE(as.logical(Sys.getenv("_R_CHECK_LIMIT_CORES_")))) {
   # on cran
   ncores <- 2L
+  Sys.setenv("OMP_THREAD_LIMIT" = 2)
 } else {
   ncores <- ifelse(
     test = parallel::detectCores() > 4,
@@ -30,7 +31,7 @@ train_x <- model.matrix(
   ~ -1 + .,
   dataset[, .SD, .SDcols = feature_cols]
 )
-train_y <- as.integer(dataset[, get("diabetes")]) - 1L
+train_y <- as.integer(dataset[, get("Class")]) - 1L
 
 options("mlexperiments.bayesian.max_init" = 4L)
 
@@ -206,8 +207,7 @@ test_that(desc = "test nested cv, bayesian, binary - lightgbm", code = {
 
   lightgbm_optimizer$learner_args <- list(
     objective = "binary",
-    metric = "binary_logloss",
-    cat_vars = c("pregnant", "pedigree")
+    metric = "binary_logloss"
   )
   lightgbm_optimizer$performance_metric_args <- list(
     positive = "1",
@@ -266,8 +266,7 @@ test_that(desc = "test nested cv, grid, binary - ranger", code = {
   ranger_optimizer$split_type <- "stratified"
 
   ranger_optimizer$learner_args <- list(
-    probability = TRUE,
-    cat_vars = c("pregnant", "pedigree")
+    probability = TRUE
   )
   ranger_optimizer$predict_args <- list(prob = TRUE, positive = "1")
 

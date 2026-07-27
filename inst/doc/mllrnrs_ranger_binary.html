@@ -2,13 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.16">
+<meta name="generator" content="quarto-1.10.8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>ranger: Binary Classification</title>
 <style>
+
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -221,13 +222,12 @@ text-decoration: underline; }
 <h2 id="import-and-prepare-data">Import and Prepare Data</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mlbench)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;PimaIndiansDiabetes2&quot;</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> PimaIndiansDiabetes2 <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;BreastCancer&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="ot">&lt;-</span> BreastCancer <span class="sc">|&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  data.table<span class="sc">::</span><span class="fu">as.data.table</span>() <span class="sc">|&gt;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>()</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>feature_cols <span class="ot">&lt;-</span> <span class="fu">colnames</span>(dataset)[<span class="dv">1</span><span class="sc">:</span><span class="dv">8</span>]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>target_col <span class="ot">&lt;-</span> <span class="st">&quot;diabetes&quot;</span></span></code></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>feature_cols <span class="ot">&lt;-</span> <span class="fu">colnames</span>(dataset)[<span class="dv">2</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>target_col <span class="ot">&lt;-</span> <span class="st">&quot;Class&quot;</span></span></code></pre></div>
 </div>
 <h2 id="general-configurations">General Configurations</h2>
 <div class="cell">
@@ -288,16 +288,16 @@ text-decoration: underline; }
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># set arguments for predict function and performance metric,</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># required for mlexperiments::MLCrossValidation and</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># mlexperiments::MLNestedCV</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>predict_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">prob =</span> <span class="cn">TRUE</span>, <span class="at">positive =</span> <span class="st">&quot;pos&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>predict_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">prob =</span> <span class="cn">TRUE</span>, <span class="at">positive =</span> <span class="st">&quot;malignant&quot;</span>)</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>performance_metric <span class="ot">&lt;-</span> mlexperiments<span class="sc">::</span><span class="fu">metric</span>(<span class="st">&quot;AUC&quot;</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>performance_metric_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">positive =</span> <span class="st">&quot;pos&quot;</span>, <span class="at">negative =</span> <span class="st">&quot;neg&quot;</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>performance_metric_args <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">positive =</span> <span class="st">&quot;malignant&quot;</span>, <span class="at">negative =</span> <span class="st">&quot;benign&quot;</span>)</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>return_models <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># required for grid search and initialization of bayesian optimization</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>parameter_grid <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">num.trees =</span> <span class="fu">seq</span>(<span class="dv">500</span>, <span class="dv">1000</span>, <span class="dv">500</span>),</span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">mtry =</span> <span class="fu">seq</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">2</span>),</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">min.node.size =</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">9</span>, <span class="dv">4</span>),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">min.node.size =</span> <span class="fu">seq</span>(<span class="dv">2</span>, <span class="dv">9</span>, <span class="dv">4</span>),</span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">max.depth =</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">9</span>, <span class="dv">4</span>),</span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample.fraction =</span> <span class="fu">seq</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">0.3</span>)</span>
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -312,7 +312,7 @@ text-decoration: underline; }
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>parameter_bounds <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">num.trees =</span> <span class="fu">c</span>(<span class="dv">100</span>L, <span class="dv">1000</span>L),</span>
 <span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">mtry =</span> <span class="fu">c</span>(<span class="dv">2</span>L, <span class="dv">9</span>L),</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">min.node.size =</span> <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">20</span>L),</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">min.node.size =</span> <span class="fu">c</span>(<span class="dv">2</span>L, <span class="dv">20</span>L),</span>
 <span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">max.depth =</span> <span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">40</span>L),</span>
 <span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">sample.fraction =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">1.</span>)</span>
 <span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -342,41 +342,44 @@ text-decoration: underline; }
 <span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>tuner_results_grid <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean num.trees mtry min.node.size max.depth sample.fraction probability</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1         0.1750403       500    2             9         5             0.5        TRUE</span></span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2         0.1712560       500    2             5         5             0.8        TRUE</span></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3         0.1712560       500    4             9         9             0.5        TRUE</span></span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4         0.2335749      1000    2             9         1             0.5        TRUE</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5         0.2479871       500    2             9         1             0.8        TRUE</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6         0.1859098      1000    6             1         9             0.5        TRUE</span></span></code></pre></div>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [================================&gt;------------------------------------------------------------------------------] 3/10 ( 30%)</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===========================================&gt;-------------------------------------------------------------------] 4/10 ( 40%)</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=======================================================&gt;-------------------------------------------------------] 5/10 ( 50%)</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_grid)</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id metric_optim_mean num.trees  mtry min.node.size max.depth sample.fraction probability</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;             &lt;num&gt;     &lt;num&gt; &lt;num&gt;         &lt;num&gt;     &lt;num&gt;           &lt;num&gt;      &lt;lgcl&gt;</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1        0.04398668       500     2             6         9             0.5        TRUE</span></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2        0.04189024       500     4             2         5             0.8        TRUE</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3        0.04398668      1000     2             2         5             0.5        TRUE</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4        0.04189024       500     2             6         9             0.8        TRUE</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5        0.04613602      1000     6             2         1             0.8        TRUE</span></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6        0.04398668      1000     2             2         5             0.8        TRUE</span></span></code></pre></div>
 </div>
 <h3 id="bayesian-optimization">Bayesian Optimization</h3>
 <div class="cell">
@@ -401,24 +404,46 @@ text-decoration: underline; }
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>tuner_results_bayesian <span class="ot">&lt;-</span> tuner<span class="sc">$</span><span class="fu">execute</span>(<span class="at">k =</span> <span class="dv">3</span>)</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    Epoch setting_id num.trees mtry min.node.size max.depth sample.fraction gpUtility acqOptimum inBounds Elapsed      Score</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:     0          1       500    2             9         5             0.5        NA      FALSE     TRUE   1.005 -0.1749597</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:     0          2       500    2             5         5             0.8        NA      FALSE     TRUE   1.008 -0.1748792</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:     0          3       500    4             9         9             0.5        NA      FALSE     TRUE   0.995 -0.1786634</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:     0          4      1000    2             9         1             0.5        NA      FALSE     TRUE   0.987 -0.2407407</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:     0          5       500    2             9         1             0.8        NA      FALSE     TRUE   0.090 -0.2335749</span></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:     0          6      1000    6             1         9             0.5        NA      FALSE     TRUE   0.332 -0.1785829</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    metric_optim_mean errorMessage probability</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:         0.1749597         &lt;NA&gt;        TRUE</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:         0.1748792         &lt;NA&gt;        TRUE</span></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:         0.1786634         &lt;NA&gt;        TRUE</span></span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:         0.2407407         &lt;NA&gt;        TRUE</span></span>
-<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:         0.2335749         &lt;NA&gt;        TRUE</span></span>
-<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:         0.1785829         &lt;NA&gt;        TRUE</span></span></code></pre></div>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.169  Round = 1   num.trees = 1000.0000   mtry = 2.0000   min.node.size = 2.0000  max.depth = 5.0000  sample.fraction = 0.5000    Value = -0.04398668</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.116  Round = 2   num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.04189024</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.107  Round = 3   num.trees = 500.0000    mtry = 4.0000   min.node.size = 2.0000  max.depth = 5.0000  sample.fraction = 0.8000    Value = -0.04189024</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.169  Round = 4   num.trees = 1000.0000   mtry = 4.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.04189024</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.17   Round = 5   num.trees = 952.0000    mtry = 7.0000   min.node.size = 5.0000  max.depth = 21.0000 sample.fraction = 0.8216647 Value = -0.04817972</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.174  Round = 6   num.trees = 952.0000    mtry = 7.0000   min.node.size = 5.0000  max.depth = 21.0000 sample.fraction = 0.8216647 Value = -0.04817972</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.18   Round = 7   num.trees = 952.0000    mtry = 7.0000   min.node.size = 5.0000  max.depth = 21.0000 sample.fraction = 0.8216647 Value = -0.04817972</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.183  Round = 8   num.trees = 952.0000    mtry = 7.0000   min.node.size = 5.0000  max.depth = 21.0000 sample.fraction = 0.8216647 Value = -0.04817972</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 2    num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.04189024</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tuner_results_bayesian)</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    setting_id num.trees  mtry min.node.size max.depth sample.fraction       Value probability metric_optim_mean</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;         &lt;int&gt;     &lt;num&gt; &lt;num&gt;         &lt;num&gt;     &lt;num&gt;           &lt;num&gt;       &lt;num&gt;      &lt;lgcl&gt;             &lt;num&gt;</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:          1      1000     2             2         5       0.5000000 -0.04398668        TRUE        0.04398668</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:          2       500     2             2         9       0.5000000 -0.04189024        TRUE        0.04189024</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:          3       500     4             2         5       0.8000000 -0.04189024        TRUE        0.04189024</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:          4      1000     4             6         9       0.8000000 -0.04189024        TRUE        0.04189024</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:          5       952     7             5        21       0.8216647 -0.04817972        TRUE        0.04817972</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:          6       952     7             5        21       0.8216647 -0.04817972        TRUE        0.04817972</span></span></code></pre></div>
 </div>
 <h2 id="k-fold-cross-validation">k-Fold Cross Validation</h2>
 <div class="cell">
@@ -442,18 +467,19 @@ text-decoration: underline; }
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
 <span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance num.trees mtry min.node.size max.depth sample.fraction probability</span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8730830      1000    2             9         9             0.5        TRUE</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8836594      1000    2             9         9             0.5        TRUE</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8937253      1000    2             9         9             0.5        TRUE</span></span></code></pre></div>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance  mtry min.node.size max.depth sample.fraction probability</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt; &lt;num&gt;         &lt;num&gt;     &lt;num&gt;           &lt;num&gt;      &lt;lgcl&gt;</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9925861     2             2         9             0.5        TRUE</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9935853     2             2         9             0.5        TRUE</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9888393     2             2         9             0.5        TRUE</span></span></code></pre></div>
 </div>
 <h2 id="nested-cross-validation">Nested Cross Validation</h2>
 <h3 id="inner-grid-search">Inner Grid Search</h3>
@@ -482,99 +508,102 @@ text-decoration: underline; }
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
-<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
-<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
-<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
-<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================&gt;----------------------------------------------------------] 4/10 ( 40%)</span></span>
-<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================&gt;------------------------------------------------] 5/10 ( 50%)</span></span>
-<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=========================================================&gt;--------------------------------------] 6/10 ( 60%)</span></span>
-<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;-----------------------------] 7/10 ( 70%)</span></span>
-<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [============================================================================&gt;-------------------] 8/10 ( 80%)</span></span>
-<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=====================================================================================&gt;----------] 9/10 ( 90%)</span></span>
-<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===============================================================================================] 10/10 (100%)                                                                                                                                  </span></span>
-<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;classification error rate&#39; as optimization metric.</span></span>
-<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance num.trees mtry min.node.size max.depth sample.fraction probability</span></span>
-<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8714966      1000    6             1         9             0.5        TRUE</span></span>
-<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8725542       500    4             9         9             0.8        TRUE</span></span>
-<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8886376       500    2             9         5             0.5        TRUE</span></span></code></pre></div>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===========================================&gt;-------------------------------------------------------------------] 4/10 ( 40%)</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=======================================================&gt;-------------------------------------------------------] 5/10 ( 50%)</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-54"><a href="#cb10-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-55"><a href="#cb10-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
+<span id="cb10-56"><a href="#cb10-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [==============================================================================&gt;----------------------------------------] 2/3 ( 67%)</span></span>
+<span id="cb10-57"><a href="#cb10-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-58"><a href="#cb10-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-59"><a href="#cb10-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-60"><a href="#cb10-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-61"><a href="#cb10-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-62"><a href="#cb10-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-63"><a href="#cb10-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-64"><a href="#cb10-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===========================================&gt;-------------------------------------------------------------------] 4/10 ( 40%)</span></span>
+<span id="cb10-65"><a href="#cb10-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-66"><a href="#cb10-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-67"><a href="#cb10-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=======================================================&gt;-------------------------------------------------------] 5/10 ( 50%)</span></span>
+<span id="cb10-68"><a href="#cb10-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-69"><a href="#cb10-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-70"><a href="#cb10-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb10-71"><a href="#cb10-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-72"><a href="#cb10-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-73"><a href="#cb10-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-74"><a href="#cb10-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-75"><a href="#cb10-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-76"><a href="#cb10-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-77"><a href="#cb10-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-78"><a href="#cb10-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-79"><a href="#cb10-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-80"><a href="#cb10-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-81"><a href="#cb10-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-82"><a href="#cb10-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-83"><a href="#cb10-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-84"><a href="#cb10-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-85"><a href="#cb10-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
+<span id="cb10-86"><a href="#cb10-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [=======================================================================================================================] 3/3 (100%)</span></span>
+<span id="cb10-87"><a href="#cb10-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-88"><a href="#cb10-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-89"><a href="#cb10-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-90"><a href="#cb10-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-91"><a href="#cb10-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-92"><a href="#cb10-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-93"><a href="#cb10-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-94"><a href="#cb10-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===========================================&gt;-------------------------------------------------------------------] 4/10 ( 40%)</span></span>
+<span id="cb10-95"><a href="#cb10-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-96"><a href="#cb10-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-97"><a href="#cb10-97" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=======================================================&gt;-------------------------------------------------------] 5/10 ( 50%)</span></span>
+<span id="cb10-98"><a href="#cb10-98" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-99"><a href="#cb10-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-100"><a href="#cb10-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==================================================================&gt;--------------------------------------------] 6/10 ( 60%)</span></span>
+<span id="cb10-101"><a href="#cb10-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-102"><a href="#cb10-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-103"><a href="#cb10-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [=============================================================================&gt;---------------------------------] 7/10 ( 70%)</span></span>
+<span id="cb10-104"><a href="#cb10-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-105"><a href="#cb10-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-106"><a href="#cb10-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [========================================================================================&gt;----------------------] 8/10 ( 80%)</span></span>
+<span id="cb10-107"><a href="#cb10-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-108"><a href="#cb10-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-109"><a href="#cb10-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [===================================================================================================&gt;-----------] 9/10 ( 90%)</span></span>
+<span id="cb10-110"><a href="#cb10-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-111"><a href="#cb10-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb10-112"><a href="#cb10-112" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Parameter settings [==============================================================================================================] 10/10 (100%)</span></span>
+<span id="cb10-113"><a href="#cb10-113" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb10-114"><a href="#cb10-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-115"><a href="#cb10-115" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
+<span id="cb10-116"><a href="#cb10-116" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance num.trees  mtry min.node.size max.depth sample.fraction probability</span></span>
+<span id="cb10-117"><a href="#cb10-117" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt; &lt;num&gt;         &lt;num&gt;     &lt;num&gt;           &lt;num&gt;      &lt;lgcl&gt;</span></span>
+<span id="cb10-118"><a href="#cb10-118" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9931156       500     2             6         9             0.8        TRUE</span></span>
+<span id="cb10-119"><a href="#cb10-119" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9935853      1000     2             2         5             0.5        TRUE</span></span>
+<span id="cb10-120"><a href="#cb10-120" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9886676       500     2             6         9             0.5        TRUE</span></span></code></pre></div>
 </div>
 <h3 id="inner-bayesian-optimization">Inner Bayesian Optimization</h3>
 <div class="cell">
@@ -606,26 +635,111 @@ text-decoration: underline; }
 <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>validator_results <span class="ot">&lt;-</span> validator<span class="sc">$</span><span class="fu">execute</span>()</span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
 <span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold1</span></span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [====================================================================&gt;-----------------------------------] 2/3 ( 67%)</span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [========================================================================================================] 3/3 (100%)</span></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                                                                                   </span></span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registering parallel backend using 4 cores.</span></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     fold performance num.trees mtry min.node.size max.depth sample.fraction probability</span></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: Fold1   0.8754627      1000    6             1         9             0.5        TRUE</span></span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: Fold2   0.8767848       500    4             9         9             0.8        TRUE</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: Fold3   0.8971170       500    2             5         9             0.5        TRUE</span></span></code></pre></div>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.086  Round = 1   num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.05331217</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.14   Round = 2   num.trees = 1000.0000   mtry = 4.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.05645683</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.096  Round = 3   num.trees = 500.0000    mtry = 2.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.05645683</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.104  Round = 4   num.trees = 1000.0000   mtry = 6.0000   min.node.size = 2.0000  max.depth = 1.0000  sample.fraction = 0.8000    Value = -0.05960148</span></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.116  Round = 5   num.trees = 807.0000    mtry = 9.0000   min.node.size = 2.0000  max.depth = 10.0000 sample.fraction = 0.4920744 Value = -0.05645683</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.105  Round = 6   num.trees = 767.0000    mtry = 3.0000   min.node.size = 16.0000 max.depth = 23.0000 sample.fraction = 0.3697985 Value = -0.05960148</span></span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.095  Round = 7   num.trees = 767.0000    mtry = 3.0000   min.node.size = 16.0000 max.depth = 23.0000 sample.fraction = 0.3697985 Value = -0.05960148</span></span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.099  Round = 8   num.trees = 767.0000    mtry = 3.0000   min.node.size = 16.0000 max.depth = 23.0000 sample.fraction = 0.3697985 Value = -0.05960148</span></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 1    num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.05331217</span></span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold2</span></span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [==============================================================================&gt;----------------------------------------] 2/3 ( 67%)</span></span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.081  Round = 1   num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.05031447</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.133  Round = 2   num.trees = 1000.0000   mtry = 4.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.05031447</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.083  Round = 3   num.trees = 500.0000    mtry = 2.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.05345912</span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.095  Round = 4   num.trees = 1000.0000   mtry = 6.0000   min.node.size = 2.0000  max.depth = 1.0000  sample.fraction = 0.8000    Value = -0.04716981</span></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-80"><a href="#cb11-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-81"><a href="#cb11-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.116  Round = 5   num.trees = 826.0000    mtry = 9.0000   min.node.size = 15.0000 max.depth = 40.0000 sample.fraction = 1.0000    Value = -0.05660377</span></span>
+<span id="cb11-82"><a href="#cb11-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-83"><a href="#cb11-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-84"><a href="#cb11-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.118  Round = 6   num.trees = 1000.0000   mtry = 9.0000   min.node.size = 2.0000  max.depth = 25.0000 sample.fraction = 0.3404917 Value = -0.05660377</span></span>
+<span id="cb11-85"><a href="#cb11-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-86"><a href="#cb11-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-87"><a href="#cb11-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.102  Round = 7   num.trees = 767.0000    mtry = 3.0000   min.node.size = 16.0000 max.depth = 23.0000 sample.fraction = 0.3697985 Value = -0.04716981</span></span>
+<span id="cb11-88"><a href="#cb11-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-89"><a href="#cb11-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-90"><a href="#cb11-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.096  Round = 8   num.trees = 913.0000    mtry = 5.0000   min.node.size = 16.0000 max.depth = 1.0000  sample.fraction = 0.3000    Value = -0.04716981</span></span>
+<span id="cb11-91"><a href="#cb11-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-92"><a href="#cb11-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-93"><a href="#cb11-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 4    num.trees = 1000.0000   mtry = 6.0000   min.node.size = 2.0000  max.depth = 1.0000  sample.fraction = 0.8000    Value = -0.04716981</span></span>
+<span id="cb11-94"><a href="#cb11-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-95"><a href="#cb11-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV fold: Fold3</span></span>
+<span id="cb11-96"><a href="#cb11-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; CV progress [=======================================================================================================================] 3/3 (100%)</span></span>
+<span id="cb11-97"><a href="#cb11-97" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-98"><a href="#cb11-98" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Number of rows of initialization grid &gt; than &#39;options(&quot;mlexperiments.bayesian.max_init&quot;)&#39;...</span></span>
+<span id="cb11-99"><a href="#cb11-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ... reducing initialization grid to 4 rows.</span></span>
+<span id="cb11-100"><a href="#cb11-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-101"><a href="#cb11-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-102"><a href="#cb11-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.091  Round = 1   num.trees = 500.0000    mtry = 2.0000   min.node.size = 2.0000  max.depth = 9.0000  sample.fraction = 0.5000    Value = -0.04414495</span></span>
+<span id="cb11-103"><a href="#cb11-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-104"><a href="#cb11-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-105"><a href="#cb11-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.13   Round = 2   num.trees = 1000.0000   mtry = 4.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.04731956</span></span>
+<span id="cb11-106"><a href="#cb11-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-107"><a href="#cb11-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-108"><a href="#cb11-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.098  Round = 3   num.trees = 500.0000    mtry = 2.0000   min.node.size = 6.0000  max.depth = 9.0000  sample.fraction = 0.8000    Value = -0.04414495</span></span>
+<span id="cb11-109"><a href="#cb11-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-110"><a href="#cb11-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-111"><a href="#cb11-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.096  Round = 4   num.trees = 1000.0000   mtry = 6.0000   min.node.size = 2.0000  max.depth = 1.0000  sample.fraction = 0.8000    Value = -0.04103025</span></span>
+<span id="cb11-112"><a href="#cb11-112" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-113"><a href="#cb11-113" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-114"><a href="#cb11-114" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.096  Round = 5   num.trees = 767.0000    mtry = 3.0000   min.node.size = 16.0000 max.depth = 23.0000 sample.fraction = 0.3697985 Value = -0.04731956</span></span>
+<span id="cb11-115"><a href="#cb11-115" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-116"><a href="#cb11-116" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-117"><a href="#cb11-117" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.065  Round = 6   num.trees = 253.0000    mtry = 8.0000   min.node.size = 12.0000 max.depth = 15.0000 sample.fraction = 0.4823285 Value = -0.0441749</span></span>
+<span id="cb11-118"><a href="#cb11-118" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-119"><a href="#cb11-119" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-120"><a href="#cb11-120" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.064  Round = 7   num.trees = 245.0000    mtry = 7.0000   min.node.size = 18.0000 max.depth = 14.0000 sample.fraction = 0.3033942 Value = -0.04103025</span></span>
+<span id="cb11-121"><a href="#cb11-121" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-122"><a href="#cb11-122" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Classification: using &#39;mean classification error&#39; as optimization metric.</span></span>
+<span id="cb11-123"><a href="#cb11-123" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; elapsed = 0.131  Round = 8   num.trees = 994.0000    mtry = 6.0000   min.node.size = 15.0000 max.depth = 15.0000 sample.fraction = 0.5716413 Value = -0.0441749</span></span>
+<span id="cb11-124"><a href="#cb11-124" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb11-125"><a href="#cb11-125" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  Best Parameters Found:</span></span>
+<span id="cb11-126"><a href="#cb11-126" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Round = 4    num.trees = 1000.0000   mtry = 6.0000   min.node.size = 2.0000  max.depth = 1.0000  sample.fraction = 0.8000    Value = -0.04103025</span></span>
+<span id="cb11-127"><a href="#cb11-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-128"><a href="#cb11-128" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(validator_results)</span>
+<span id="cb11-129"><a href="#cb11-129" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;      fold performance num.trees  mtry min.node.size max.depth sample.fraction probability</span></span>
+<span id="cb11-130"><a href="#cb11-130" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt; &lt;num&gt;         &lt;num&gt;     &lt;num&gt;           &lt;num&gt;      &lt;lgcl&gt;</span></span>
+<span id="cb11-131"><a href="#cb11-131" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9932921       500     2             2         9             0.5        TRUE</span></span>
+<span id="cb11-132"><a href="#cb11-132" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9913315      1000     6             2         1             0.8        TRUE</span></span>
+<span id="cb11-133"><a href="#cb11-133" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9876374      1000     6             2         1             0.8        TRUE</span></span></code></pre></div>
 </div>
 <h2 id="holdout-test-dataset-performance">Holdout Test Dataset Performance</h2>
 <h3 id="predict-outcome-in-holdout-test-dataset">Predict Outcome in Holdout Test Dataset</h3>
@@ -644,16 +758,16 @@ text-decoration: underline; }
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;binary&quot;</span></span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>perf_ranger</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC     Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR       FPR       FNR       PPV</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;     &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.7874067 0.7874067 0.1735079   0.2158639 0.6548199    18    67    12    21 0.4615385 0.8481013 0.1518987 0.5384615 0.6000000</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.7802661 0.7802661 0.1838647   0.1690580 0.6738072    18    70     9    21 0.4615385 0.8860759 0.1139241 0.5384615 0.6666667</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.7831873 0.7831873 0.1754549   0.2070644 0.6484907    18    66    13    21 0.4615385 0.8354430 0.1645570 0.5384615 0.5806452</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV       FDR       MCC        F1     GMEAN       GPR       ACC      MMCE       BER</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.7613636 0.4000000 0.3345034 0.5217391 0.6256448 0.5262348 0.7203390 0.2796610 0.3451801</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.7692308 0.3333333 0.3892611 0.5454545 0.6394983 0.5547002 0.7457627 0.2542373 0.3261928</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.7586207 0.4193548 0.3174204 0.5142857 0.6209582 0.5176776 0.7118644 0.2881356 0.3515093</span></span></code></pre></div>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     model performance       AUC      Brier BrierScaled       BAC    TP    TN    FP    FN       TPR       TNR        FPR        FNR       PPV</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;char&gt;       &lt;num&gt;     &lt;num&gt;      &lt;num&gt;       &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;      &lt;num&gt;     &lt;num&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:  Fold1   0.9888060 0.9888060 0.04307263   0.8105483 0.9508706    66   132     2     6 0.9166667 0.9850746 0.01492537 0.08333333 0.9705882</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:  Fold2   0.9795813 0.9795813 0.07807664   0.6565858 0.9257877    64   129     5     8 0.8888889 0.9626866 0.03731343 0.11111111 0.9275362</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:  Fold3   0.9795813 0.9795813 0.07868587   0.6539061 0.9220564    64   128     6     8 0.8888889 0.9552239 0.04477612 0.11111111 0.9142857</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;          NPV        FDR       MCC        F1     GMEAN       GPR       ACC       MMCE        BER</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;        &lt;num&gt;      &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;     &lt;num&gt;      &lt;num&gt;      &lt;num&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0.9565217 0.02941176 0.9143377 0.9428571 0.9502553 0.9432422 0.9611650 0.03883495 0.04912935</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0.9416058 0.07246377 0.8603139 0.9078014 0.9250521 0.9080070 0.9368932 0.06310680 0.07421227</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0.9411765 0.08571429 0.8497685 0.9014085 0.9214597 0.9014979 0.9320388 0.06796117 0.07794362</span></span></code></pre></div>
 </div>
 
 
